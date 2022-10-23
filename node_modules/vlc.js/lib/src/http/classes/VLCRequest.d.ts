@@ -1,0 +1,13 @@
+/// <reference types="node" />
+import { ClientRequest, IncomingMessage } from "http";
+/**
+ * @class VLCRequest
+ * @description This class stores all the data about a completed request with VLCs' HTTP server.
+ */
+export declare class VLCRequest {
+    response: IncomingMessage;
+    request: ClientRequest;
+    data: Buffer;
+    constructor(req: ClientRequest, res: IncomingMessage, data: Buffer);
+}
+//# sourceMappingURL=VLCRequest.d.ts.map
