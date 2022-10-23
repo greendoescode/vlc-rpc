@@ -1,6 +1,7 @@
 # vlc-discord-rpc
 
 Discord rich presence for VLC media player.
+This is a fork of [PigPogs](https://github.com/Pigpog/vlc-discord-rpc) VLC RPC, adding automatic Album Art
 
 ![Example](./example.png)
 
@@ -32,7 +33,6 @@ For advanced features, see [ADVANCED.md](./ADVANCED.md).
 ## Limitations
 
  - When running multiple concurrent instances, only the first-opened instance of VLC will have a rich presence
- - The rich presence cannot display album art
  - This program does NOT allow you to stream media to others
 
 "# vlc-rpc" 
