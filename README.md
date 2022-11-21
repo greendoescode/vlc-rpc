@@ -1,11 +1,11 @@
 # vlc-rpc
 
 Discord rich presence for VLC media player.
-This is a fork of [PigPogs](https://github.com/Pigpog/vlc-discord-rpc) VLC RPC, adding automatic Album Art.
+This is a fork of [PigPogs](https://github.com/Pigpog/vlc-discord-rpc) VLC RPC, adding automatic album art.
 
 ![Example](./example.png)
 
-Join us on [Discord](https://discord.gg/3Fu6KHd).
+Join us on [Discord](https://discord.gg/CHegxjdFCD).
 
 # Setup
 
