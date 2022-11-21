@@ -8,6 +8,8 @@ This is a fork of [PigPogs](https://github.com/Pigpog/vlc-discord-rpc) VLC RPC, 
 
 Join us on [Discord](https://discord.gg/CHegxjdFCD).
 
+### Still in development and includes errors!
+
 # Setup
 
 ### Requirements
