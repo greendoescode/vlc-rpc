@@ -1,16 +1,29 @@
+const { appendFile } = require("fs");
+
 module.exports = {
 
   // The full path to your VLC executable
   // If left blank, typical defaults are used
   vlcPath: "E:/Programs/VLC/vlc.exe",
+  
+  debug : "false",
 
   rpc: {
+    
+    // Set the text for the large image, this accepts, title, album, volume, artist and fetched.
+    largeImageText: "fetched",
 
     // The Discord application ID for the rich presence
     id: '1032293686098272316',
 
     // How frequently in milliseconds to check for updates
     updateInterval: 1000,
+
+    // Change where to fetch the album artwork (spotify and apple only supported)
+    whereToFetchOnline: "apple",
+
+    // Change the provider for the rpc button (youtube and apple only, not yet implemented)
+    changeButtonProvider: "apple",
 
     // When playback is paused, wait this many milliseconds 
     // before removing your rich presence

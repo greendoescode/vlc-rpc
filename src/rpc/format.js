@@ -3,9 +3,10 @@
  */
 
 
-
+const fs = require('fs')
 const log = require('../helpers/lager.js');
 const config = require('../../config/config.js');
+const axios = require('axios')
 const albumArt = require('album-art');
 
 
@@ -23,21 +24,60 @@ module.exports = async (status) => {
   const { meta } = status.information.category;
 
   
+  const fetchArtworkApple = async (searchQuery) => {
+    const params = {
+      media: "music",
+      term: searchQuery,
+    };
+    return axios.get("https://itunes.apple.com/search", {
+      params,
+    });
+  };
 
   const artist =  String(meta.artist);
   const options = {
     album: String(encodeURIComponent(meta.album))
   }
 
-  const art  = await albumArt(artist, options).then((data) => data);
 
-  console.log(art);
-  console.log(status.state)
+  if (config.rpc.whereToFetchOnline === 'apple') {
+    var appleresponse = await fetchArtworkApple(`${meta.title} ${meta.artist}`);
+    var artwork = appleresponse.data.results[0].artworkUrl100;
+    var fetched = "Apple";
+    if (artwork === undefined) {
+      var artwork  = await albumArt(artist, options).then((data) => data);
+      var fetched = "Spotify";
+    }
+  } else {
+    var artwork  = await albumArt(artist, options).then((data) => data);
+    var fetched = "Spotify";
+  }
+
+  if (config.debug === 'true') {
+    console.log(artwork),
+    console.log(status.state),
+    console.log(fetched)
+  }
+  
+  if (config.rpc.largeImageText === "artist"){
+    var largeImageTextIs = meta.artist
+  } else if (config.rpc.largeImageText === "album") {
+    var largeImageTextIs = meta.album
+  } else if (config.rpc.largeImageText === "volume") {
+    var largeImageTextIs = `Volume: ${Math.round(status.volume / 2.56)}%`
+  } else if (config.rpc.largeImageText === "title") {
+    var largeImageTextIs = meta.title
+  } else if (config.rpc.largeImageText === "fetched") {
+    var largeImageTextIs = `Artwork fetched from ${fetched}`
+  }
+
+
 
 
   const output = {
     details: meta.title || meta.filename || "Playing something..",
-    largeImageKey: `${await albumArt(artist, options).then((data) => data)}` || "https://i.pinimg.com/originals/67/f6/cb/67f6cb14f862297e3c145014cdd6b635.jpg",
+    largeImageText: largeImageTextIs,
+    largeImageKey: artwork || "https://i.pinimg.com/originals/67/f6/cb/67f6cb14f862297e3c145014cdd6b635.jpg",
     smallImageKey: status.state,
     smallImageText: `Volume: ${Math.round(status.volume / 2.56)}%`,
     instance: true,
