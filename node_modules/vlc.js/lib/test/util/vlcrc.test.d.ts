@@ -1,2 +1,0 @@
-export {};
-//# sourceMappingURL=vlcrc.test.d.ts.map
