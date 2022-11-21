@@ -19,7 +19,6 @@ Join us on [Discord](https://discord.gg/CHegxjdFCD).
 ### Steps
 
  1. [Download the latest release for your platform](https://github.com/GreenDiscord/vlc-rpc/releases)
-  - If you download a bundle release, you will not need to install Node.JS/NPM
  2. Unzip the file
  3. Launch the start file
  4. Play media in the VLC window that opens
