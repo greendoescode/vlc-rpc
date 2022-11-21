@@ -1,7 +1,7 @@
 # vlc-discord-rpc
 
 Discord rich presence for VLC media player.
-This is a fork of [PigPogs](https://github.com/Pigpog/vlc-discord-rpc) VLC RPC, adding automatic Album Art
+This is a fork of [PigPogs](https://github.com/Pigpog/vlc-discord-rpc) VLC RPC, adding automatic Album Art.
 
 ![Example](./example.png)
 
@@ -17,7 +17,7 @@ Join us on [Discord](https://discord.gg/3Fu6KHd).
 
 ### Steps
 
- 1. [Download the latest release for your platform](https://github.com/Pigpog/vlc-discord-rpc/releases)
+ 1. [Download the latest release for your platform](https://github.com/GreenDiscord/vlc-rpc/releases)
   - If you download a bundle release, you will not need to install Node.JS/NPM
  2. Unzip the file
  3. Launch the start file
