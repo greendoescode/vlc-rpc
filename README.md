@@ -35,4 +35,4 @@ For advanced features, see [ADVANCED.md](./ADVANCED.md).
  - When running multiple concurrent instances, only the first-opened instance of VLC will have a rich presence
  - This program does NOT allow you to stream media to others
 
-"# vlc-rpc" 
+
