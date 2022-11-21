@@ -7,7 +7,7 @@ module.exports = {
   rpc: {
 
     // The Discord application ID for the rich presence
-    id: '410664151334256663',
+    id: '1032293686098272316',
 
     // How frequently in milliseconds to check for updates
     updateInterval: 1000,

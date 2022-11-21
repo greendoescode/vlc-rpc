@@ -1,0 +1,9 @@
+{
+    "Fetch Album art from spotify or apple": "comment1",
+    "whereToFetchOnline": "apple",
+    "Will change from either youtube or apple music button": "comment2",
+    "changeButtonProvider": "youtube",
+    "Change to your own client id, can save you from rate limits": "comment3",
+    "clientID": "1032293686098272316"
+}
+

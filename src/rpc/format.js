@@ -24,24 +24,20 @@ module.exports = async (status) => {
 
   
 
-  const artist =  meta.artist
+  const artist =  String(meta.artist);
   const options = {
-    album: encodeURI(meta.album)
+    album: String(encodeURIComponent(meta.album))
   }
-  async function potato() {
-    const art = await albumArt(artist, options).then((data) => data)
-    return art
-  }
-  
-  const art = await potato()
+
+  const art  = await albumArt(artist, options).then((data) => data);
+
+  console.log(art);
+  console.log(status.state)
 
 
-
-
-  console.log(`Artist: ${artist}, Album: ${encodeURI(meta.album)}, Album Art: ${art}`)
   const output = {
-    details: meta.title || meta.filename,
-    largeImageKey: `${art}`,
+    details: meta.title || meta.filename || "Playing something..",
+    largeImageKey: `${await albumArt(artist, options).then((data) => data)}` || "https://i.pinimg.com/originals/67/f6/cb/67f6cb14f862297e3c145014cdd6b635.jpg",
     smallImageKey: status.state,
     smallImageText: `Volume: ${Math.round(status.volume / 2.56)}%`,
     instance: true,
