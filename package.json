@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "discord-rpc": "^3.1.1",
-    "form-data": "^4.0.0"
+    "form-data": "^4.0.0",
     "album-art": "^2.0.2",
     "vlc.js": "^3.1.0"
   },
@@ -23,9 +23,9 @@
     {
       "name": "dylhack",
       "email": "dylhack@gmail.com"
-    }
+    },
     {
-      "name": "GreenDiscord"
+      "name": "GreenDiscord",
       "email": "green@apolga.com"
     }
   ],

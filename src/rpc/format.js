@@ -6,7 +6,7 @@
 
 const log = require('../helpers/lager.js');
 const config = require('../../config/config.js');
-const albumArt = require('album-art')
+const albumArt = require('album-art');
 
 
 module.exports = async (status) => {

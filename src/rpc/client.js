@@ -4,6 +4,7 @@
 
 const RPC = require('discord-rpc');
 const config = require('../../config/config.js');
+const config = require('../../config/config.json')
 const diff = require('../vlc/diff.js');
 const format = require('./format.js');
 const log = require('../helpers/lager.js');
