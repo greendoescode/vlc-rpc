@@ -11,7 +11,7 @@ Join us on [Discord](https://discord.gg/CHegxjdFCD).
 
 ### Requirements
 
-- [Node.JS and NPM](https://nodejs.org/en/) (unless you're using a bundle release)
+- [Node.JS and NPM](https://nodejs.org/en/)
 - [VLC](https://www.videolan.org/index.html)
 - [Discord desktop client](https://discord.com/)
 
