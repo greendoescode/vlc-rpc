@@ -7,15 +7,15 @@ This is a fork of [PigPogs](https://github.com/Pigpog/vlc-discord-rpc) VLC RPC, 
 
 Join us on [Discord](https://discord.gg/3Fu6KHd).
 
-### Setup
+# Setup
 
-## Requirements
+### Requirements
 
 - [Node.JS and NPM](https://nodejs.org/en/) (unless you're using a bundle release)
 - [VLC](https://www.videolan.org/index.html)
 - [Discord desktop client](https://discordapp.com/)
 
-## Steps
+### Steps
 
  1. [Download the latest release for your platform](https://github.com/GreenDiscord/vlc-rpc/releases)
   - If you download a bundle release, you will not need to install Node.JS/NPM
@@ -23,7 +23,7 @@ Join us on [Discord](https://discord.gg/3Fu6KHd).
  3. Launch the start file
  4. Play media in the VLC window that opens
 
-## Configuration
+### Configuration
 
 Configuration is done by editing the [config/config.js](./config/config.js) file.
 Each option is explained in a comment above it.
