@@ -13,7 +13,7 @@ Join us on [Discord](https://discord.gg/3Fu6KHd).
 
 - [Node.JS and NPM](https://nodejs.org/en/) (unless you're using a bundle release)
 - [VLC](https://www.videolan.org/index.html)
-- [Discord desktop client](https://discordapp.com/)
+- [Discord desktop client](https://discord.com/)
 
 ### Steps
 
