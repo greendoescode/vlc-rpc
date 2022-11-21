@@ -6,7 +6,7 @@
   "dependencies": {
     "discord-rpc": "^3.1.1",
     "form-data": "^4.0.0"
-    "album-art": "^veris",
+    "album-art": "^2.0.2",
     "vlc.js": "^3.1.0"
   },
   "scripts": {
