@@ -8,6 +8,7 @@ const log = require('../helpers/lager.js');
 const config = require('../../config/config.js');
 const axios = require('axios')
 const albumArt = require('album-art');
+const yt = require("ytsr")
 
 
 module.exports = async (status) => {
@@ -22,6 +23,9 @@ module.exports = async (status) => {
     }; 
   } // else
   const { meta } = status.information.category;
+  if(config.rpc.changeButtonProvider === "youtube"){
+    var enableYoutubeButton = "true"
+  }
 
   
   const fetchArtworkApple = async (searchQuery) => {
@@ -34,23 +38,16 @@ module.exports = async (status) => {
     });
   };
 
-  const artist =  String(meta.artist);
+  const artist =  String(encodeURIComponent(meta.artist));
   const options = {
     album: String(encodeURIComponent(meta.album))
   }
 
-
+  
   if (config.rpc.whereToFetchOnline === 'apple') {
     var appleresponse = await fetchArtworkApple(`${meta.title} ${meta.artist}`);
     var artwork = appleresponse.data.results[0].artworkUrl100;
     var fetched = "Apple";
-    if (artwork === undefined) {
-      var artwork  = await albumArt(artist, options).then((data) => data);
-      var fetched = "Spotify";
-    }
-  } else {
-    var artwork  = await albumArt(artist, options).then((data) => data);
-    var fetched = "Spotify";
   }
 
   if (config.debug === 'true') {
@@ -58,7 +55,11 @@ module.exports = async (status) => {
     console.log(status.state),
     console.log(fetched)
   }
-  
+  if (artwork === undefined){
+    var fetched = "No Where";
+    console.error("Couldn't find artwork! Try switching providers");
+  }
+
   if (config.rpc.largeImageText === "artist"){
     var largeImageTextIs = meta.artist
   } else if (config.rpc.largeImageText === "album") {
@@ -70,17 +71,37 @@ module.exports = async (status) => {
   } else if (config.rpc.largeImageText === "fetched") {
     var largeImageTextIs = `Artwork fetched from ${fetched}`
   }
+  
+
+  if(enableYoutubeButton){
+    const search = await yt(`${meta.title} ${meta.artist}`, { limit: 1 })
+    const resultunjson = JSON.stringify(search.items)
+    var result = JSON.parse(resultunjson)
+  } 
+  
 
 
 
 
   const output = {
+    
     details: meta.title || meta.filename || "Playing something..",
     largeImageText: largeImageTextIs,
     largeImageKey: artwork || "https://i.pinimg.com/originals/67/f6/cb/67f6cb14f862297e3c145014cdd6b635.jpg",
     smallImageKey: status.state,
     smallImageText: `Volume: ${Math.round(status.volume / 2.56)}%`,
     instance: true,
+    buttons: [
+      enableYoutubeButton
+        ?  {
+            label: "Listen on Youtube",
+            url: result[0].url,
+            }
+          : {
+            label: "Listen on Apple Music",
+            url: appleresponse.data.results[0].trackViewUrl,
+        },
+      ]
   };
   // if video
   if (status.stats.decodedvideo > 0) { 

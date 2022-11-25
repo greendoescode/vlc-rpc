@@ -1,5 +1,3 @@
-const { appendFile } = require("fs");
-
 module.exports = {
 
   // The full path to your VLC executable
