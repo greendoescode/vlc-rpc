@@ -8,8 +8,6 @@ This is a fork of [PigPogs](https://github.com/Pigpog/vlc-discord-rpc) VLC RPC, 
 
 Join us on [Discord](https://discord.gg/CHegxjdFCD).
 
-### Still in development and bugs will ecour
-
 # Setup
 
 ### Requirements
@@ -37,4 +35,6 @@ For advanced features, see [ADVANCED.md](./info/ADVANCED.md).
  - When running multiple concurrent instances, only the first-opened instance of VLC will have a rich presence
  - This program does NOT allow you to stream media to others
 
+## Known Bugs
 
+ - When listenting to a song with foreign characters and using apple music for fetching info, the RPC will crash

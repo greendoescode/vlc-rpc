@@ -43,21 +43,26 @@ module.exports = async (status) => {
     album: String(encodeURIComponent(meta.album))
   }
 
+  var appleresponse = await fetchArtworkApple(`${meta.title} ${meta.artist}`);
   
   if (config.rpc.whereToFetchOnline === 'apple') {
-    var appleresponse = await fetchArtworkApple(`${meta.title} ${meta.artist}`);
     var artwork = appleresponse.data.results[0].artworkUrl100;
     var fetched = "Apple";
+  } else {
+    var artwork = await albumArt(`${encodeURIComponent(properties.arist)}`, options).then((data) => data);
+    var fetched = "Spotify"  
   }
 
+
+  
   if (config.debug === 'true') {
     console.log(artwork),
     console.log(status.state),
     console.log(fetched)
   }
   if (artwork === undefined){
+    console.error(`Couldn't find artwork using ${config.rpc.whereToFetchOnline}! Try switching providers`);    
     var fetched = "No Where";
-    console.error("Couldn't find artwork! Try switching providers");
   }
 
   if (config.rpc.largeImageText === "artist"){
