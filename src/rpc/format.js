@@ -49,7 +49,7 @@ module.exports = async (status) => {
     var artwork = appleresponse.data.results[0].artworkUrl100;
     var fetched = "Apple";
   } else {
-    var artwork = await albumArt(`${encodeURIComponent(properties.arist)}`, options).then((data) => data);
+    var artwork = await albumArt(artist, options).then((data) => data);
     var fetched = "Spotify"  
   }
 
