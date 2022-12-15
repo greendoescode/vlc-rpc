@@ -1,6 +1,6 @@
 {
   "name": "vlc-rpc",
-  "version": "1.1.1",
+  "version": "1.1.5",
   "description": "Discord rich presence for VLC media player.",
   "main": "index.js",
   "dependencies": {
