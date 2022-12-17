@@ -58,11 +58,19 @@ module.exports = async (status) => {
   if (config.debug === 'true') {
     console.log(artwork),
     console.log(status.state),
-    console.log(fetched)
+    console.log(fetched),
+    console.log(meta.title),
+    console.log(meta.artist)
   }
+
   if (artwork === undefined){
     console.error(`Couldn't find artwork using ${config.rpc.whereToFetchOnline}! Try switching providers`);    
-    var fetched = "No Where";
+    var fetched = "Nowhere";
+  }
+
+  if (meta.artist === undefined){
+    var artwork = config.rpc.largeIcon
+    var fetched = "Nowhere"
   }
 
   if (config.rpc.largeImageText === "artist"){
@@ -84,7 +92,6 @@ module.exports = async (status) => {
     var result = JSON.parse(resultunjson)
   } 
   
-
 
 
 
