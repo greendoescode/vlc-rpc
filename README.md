@@ -28,7 +28,7 @@ Join us on [Discord](https://discord.gg/CHegxjdFCD).
 Configuration is done by editing the [config/config.js](./config/config.js) file.
 Each option is explained in a comment above it.
 
-For advanced features, see [ADVANCED.md](./info/ADVANCED.md).
+For advanced features, see [ADVANCED.md](./info/advanced.md).
 
 ## Limitations
 
