@@ -21,7 +21,9 @@ function update() {
   diff(async (status, difference)  => {
     if (difference) {
       client.setActivity(await format(status));
-      console.log("Presence updated")
+      if (config.console.presencestate == true){
+        console.log("Presence updated")
+      }
       if (!awake) {
         awake = true;
         timeInactive = 0;
