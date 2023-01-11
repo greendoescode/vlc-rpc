@@ -44,8 +44,19 @@ module.exports = async (status) => {
   var appleresponse = await fetchArtworkApple(`${meta.title} ${meta.artist}`);
   
   if (config.rpc.whereToFetchOnline === 'apple') {
-    var artwork = appleresponse.data.results[0].artworkUrl100;
-    var fetched = "Apple";
+    if (meta.title === undefined) {
+      var artwork = config.rpc.largeIcon
+      var fetched = "Nowhere"
+      var enableYoutubeButton = "true"
+    } else if (meta.artist === undefined){
+      var artwork = config.rpc.largeIcon
+      var fetched = "Nowhere"
+      var enableYoutubeButton = "true"
+    } else {
+      var artwork = appleresponse.data.results[0].artworkUrl100;
+      var fetched = "Apple";
+    }
+    
   } else {
     var artwork = await albumArt(artist, options).then((data) => data);
     var fetched = "Spotify"  
