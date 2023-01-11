@@ -58,7 +58,7 @@ module.exports = {
   vlc: {
 
     // If no password is given, a random password is used
-    password: 'passwordgoeshere',
+    password: 'EEmm23?!',
 
     // This must correspond with the port VLC's web interface uses
     port: 8080,

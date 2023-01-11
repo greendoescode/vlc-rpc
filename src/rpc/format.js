@@ -23,9 +23,7 @@ module.exports = async (status) => {
     }; 
   } // else
   const { meta } = status.information.category;
-  if(config.rpc.changeButtonProvider === "youtube"){
-    var enableYoutubeButton = "true"
-  }
+
 
   
   const fetchArtworkApple = async (searchQuery) => {
@@ -68,9 +66,18 @@ module.exports = async (status) => {
     var fetched = "Nowhere";
   }
 
+  if(config.rpc.changeButtonProvider === "youtube"){
+    var enableYoutubeButton = "true"
+  } 
+
   if (meta.artist === undefined){
     var artwork = config.rpc.largeIcon
     var fetched = "Nowhere"
+    var enableYoutubeButton = "true"
+  } else if (meta.title === undefined) {
+    var artwork = config.rpc.largeIcon
+    var fetched = "Nowhere"
+    var enableYoutubeButton = "true"
   }
 
   if (config.rpc.largeImageText === "artist"){
@@ -87,10 +94,31 @@ module.exports = async (status) => {
   
 
   if(enableYoutubeButton){
-    const search = await yt(`${meta.title} ${meta.artist}`, { limit: 1 })
-    const resultunjson = JSON.stringify(search.items)
-    var result = JSON.parse(resultunjson)
-  } 
+    if (meta.title === undefined) {
+      const search = await yt(`${meta.filename}`, { limit: 1 })
+      const resultunjson = JSON.stringify(search.items)
+      const result = JSON.parse(resultunjson)
+      var url = result[0].url
+      var label = "Listen on Youtube" 
+    } else if (meta.artist === undefined) {
+      const search = await yt(`${meta.filename}`, { limit: 1 })
+      const resultunjson = JSON.stringify(search.items)
+      const result = JSON.parse(resultunjson)
+      var url = result[0].url
+      var label = "Listen on Youtube" 
+    } else {
+      const search = await yt(`${meta.title} ${meta.artist}`, { limit: 1 })
+      const resultunjson = JSON.stringify(search.items)
+      const result = JSON.parse(resultunjson)
+      var url = result[0].url
+      var label = "Listen on Youtube" 
+    }
+    
+
+  } else {
+    var url = appleresponse.data.results[0].trackViewUrl
+    var label = "Listen on Apple Music"
+  }
   
 
 
@@ -104,14 +132,9 @@ module.exports = async (status) => {
     smallImageText: `Volume: ${Math.round(status.volume / 2.56)}%`,
     instance: true,
     buttons: [
-      enableYoutubeButton
-        ?  {
-            label: "Listen on Youtube",
-            url: result[0].url,
-            }
-          : {
-            label: "Listen on Apple Music",
-            url: appleresponse.data.results[0].trackViewUrl,
+        {
+          label: label,
+          url: url,
         },
       ]
   };
