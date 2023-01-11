@@ -11,8 +11,7 @@ you normally would and still show a rich presence.
 
 ### Instructions
 
-These instructions apply to all platforms. For a visual guide, see
-[this GIF](https://github.com/Pigpog/vlc-discord-rpc/blob/develop/setup.gif?raw=true)
+These instructions apply to all platforms.
 
  1. Open VLC Media Player
 
