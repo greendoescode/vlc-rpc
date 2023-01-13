@@ -11,7 +11,10 @@ module.exports = {
     presencestate : false,
     
     // Sets the console to Task icon mode (wip)
-    taskicon : false
+    taskicon : false,
+
+    // Sets it to show whats now playing
+    nowplaying : true
 
   },
 

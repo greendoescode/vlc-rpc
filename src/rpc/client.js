@@ -20,9 +20,18 @@ let timeInactive = 0;
 function update() {
   diff(async (status, difference)  => {
     if (difference) {
+      const { meta } = status.information.category;
       client.setActivity(await format(status));
       if (config.console.presencestate == true){
         console.log("Presence updated")
+      }
+      if (config.console.nowplaying === true){
+        if (meta.title === undefined || meta.artist === undefined) {
+          console.log(" ")
+        } else {
+          console.log(`Now playing ${meta.title} by ${meta.artist}`)
+        }
+        
       }
       if (!awake) {
         awake = true;
@@ -36,7 +45,9 @@ function update() {
           awake = false;
           client.clearActivity();
         } else {
-	  console.log("Presence updated")
+	  if (config.console.presencestate == true){
+        console.log("Presence updated")
+      }
 	  client.setActivity(await format(status));
 	  awake = false;
 	}

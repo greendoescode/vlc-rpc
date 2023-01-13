@@ -44,17 +44,27 @@ module.exports = async (status) => {
   var appleresponse = await fetchArtworkApple(`${meta.title} ${meta.artist}`);
   
   if (config.rpc.whereToFetchOnline === 'apple') {
-    if (meta.title === undefined) {
-      var artwork = config.rpc.largeIcon
-      var fetched = "Nowhere"
-      var enableYoutubeButton = "true"
-    } else if (meta.artist === undefined){
-      var artwork = config.rpc.largeIcon
-      var fetched = "Nowhere"
-      var enableYoutubeButton = "true"
+    if (meta.title === undefined || meta.artist === undefined) {
+      
     } else {
-      var artwork = appleresponse.data.results[0].artworkUrl100;
-      var fetched = "Apple";
+      if (appleresponse.data.results[0] === undefined) {
+        var testartwork = await albumArt(artist, options).then((data) => data);
+        if (testartwork === undefined) {
+          var artwork = config.rpc.largeIcon
+          var fetched = "Nowhere"
+          var enableYoutubeButton = "true"
+        } else {
+          var artwork = testartwork
+          var fetched = "Spotify"
+          var enableYoutubeButton = true
+        }
+        
+      } else {
+        
+        var artwork = appleresponse.data.results[0].artworkUrl100;
+        var fetched = "Apple";
+      }
+     
     }
     
   } else {
@@ -70,11 +80,6 @@ module.exports = async (status) => {
     console.log(fetched),
     console.log(meta.title),
     console.log(meta.artist)
-  }
-
-  if (artwork === undefined){
-    console.error(`Couldn't find artwork using ${config.rpc.whereToFetchOnline}! Try switching providers`);    
-    var fetched = "Nowhere";
   }
 
   if(config.rpc.changeButtonProvider === "youtube"){
@@ -128,6 +133,7 @@ module.exports = async (status) => {
 
   } else {
     var url = appleresponse.data.results[0].trackViewUrl
+    
     var label = "Listen on Apple Music"
   }
   
