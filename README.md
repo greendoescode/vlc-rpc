@@ -12,7 +12,7 @@ Join us on [Discord](https://discord.gg/CHegxjdFCD).
 
 ### Requirements
 
-- [Node.JS and NPM](https://nodejs.org/en/)
+- [Node.JS and NPM](https://nodejs.org/en/) (not needed for bundled releases)
 - [VLC](https://www.videolan.org/index.html)
 - [Discord desktop client](https://discord.com/)
 
@@ -37,4 +37,4 @@ For advanced features, see [ADVANCED.md](./info/advanced.md).
 
 ## Known Bugs
 
- - When listenting to a song with foreign characters and using apple music for fetching info, the RPC will crash
+ - Currently none! If you find any bugs, please report them in [Issues](https://github.com/GreenDiscord/vlc-rpc/issues) or the [Discord](https://discord.gg/CHegxjdFCD)
