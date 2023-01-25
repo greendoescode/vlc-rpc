@@ -1,0 +1,1 @@
+print(len("tick, tick… BOOM! Soundtrack from the Netflix Film"))

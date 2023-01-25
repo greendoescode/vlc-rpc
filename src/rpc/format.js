@@ -3,12 +3,12 @@
  */
 
 
-const fs = require('fs')
+const fs = require('fs');
 const log = require('../helpers/lager.js');
 const config = require('../../config/config.js');
-const axios = require('axios')
+const axios = require('axios');
 const albumArt = require('album-art');
-const yt = require("ytsr")
+const yt = require("ytsr");
 
 
 module.exports = async (status) => {
@@ -45,20 +45,18 @@ module.exports = async (status) => {
   
   if (config.rpc.whereToFetchOnline === 'apple') {
     if (meta.title === undefined || meta.artist === undefined) {
-      
     } else {
       if (appleresponse.data.results[0] === undefined) {
         var testartwork = await albumArt(artist, options).then((data) => data);
         if (testartwork === undefined) {
-          var artwork = config.rpc.largeIcon
-          var fetched = "Nowhere"
-          var enableYoutubeButton = "true"
+          var artwork = config.rpc.largeIcon;
+          var fetched = "Nowhere";
+          var enableYoutubeButton = "true";
         } else {
-          var artwork = testartwork
-          var fetched = "Spotify"
-          var enableYoutubeButton = true
+          var artwork = testartwork;
+          var fetched = "Spotify";
+          var enableYoutubeButton = true;
         }
-        
       } else {
         
         var artwork = appleresponse.data.results[0].artworkUrl100;
@@ -69,81 +67,94 @@ module.exports = async (status) => {
     
   } else {
     var artwork = await albumArt(artist, options).then((data) => data);
-    var fetched = "Spotify"  
+    var fetched = "Spotify";
   }
 
 
   
   if (config.debug === 'true') {
-    console.log(artwork),
-    console.log(status.state),
-    console.log(fetched),
-    console.log(meta.title),
-    console.log(meta.artist)
+    console.log(artwork);
+    console.log(status.state);
+    console.log(fetched);
+    console.log(meta.title);
+    console.log(meta.artist);
   }
 
   if(config.rpc.changeButtonProvider === "youtube"){
-    var enableYoutubeButton = "true"
+    var enableYoutubeButton = "true";
   } 
 
   if (meta.artist === undefined){
-    var artwork = config.rpc.largeIcon
-    var fetched = "Nowhere"
-    var enableYoutubeButton = "true"
+    var artwork = config.rpc.largeIcon;
+    var fetched = "Nowhere";
+    var enableYoutubeButton = "true";
   } else if (meta.title === undefined) {
-    var artwork = config.rpc.largeIcon
-    var fetched = "Nowhere"
-    var enableYoutubeButton = "true"
+    var artwork = config.rpc.largeIcon;
+    var fetched = "Nowhere";
+    var enableYoutubeButton = "true";
   }
 
+
+  // Really not much
   if (config.rpc.largeImageText === "artist"){
-    var largeImageTextIs = meta.artist
+    var largeImageTextIs = meta.artist;
   } else if (config.rpc.largeImageText === "album") {
-    var largeImageTextIs = meta.album
+    var largeImageTextIs = meta.album;
   } else if (config.rpc.largeImageText === "volume") {
-    var largeImageTextIs = `Volume: ${Math.round(status.volume / 2.56)}%`
+    var largeImageTextIs = `Volume: ${Math.round(status.volume / 2.56)}%`;
   } else if (config.rpc.largeImageText === "title") {
-    var largeImageTextIs = meta.title
+    var largeImageTextIs = meta.title;
   } else if (config.rpc.largeImageText === "fetched") {
-    var largeImageTextIs = `Artwork fetched from ${fetched}`
+    var largeImageTextIs = `Artwork fetched from ${fetched}`;
   }
   
-
+// Checks if youtube button is turned on in the config, then searches the names on youtube
   if(enableYoutubeButton){
     if (meta.title === undefined) {
-      const search = await yt(`${meta.filename}`, { limit: 1 })
-      const resultunjson = JSON.stringify(search.items)
-      const result = JSON.parse(resultunjson)
-      var url = result[0].url
-      var label = "Listen on Youtube" 
+      const search = await yt(`${meta.filename}`, { limit: 1 });
+      const resultunjson = JSON.stringify(search.items);
+      const result = JSON.parse(resultunjson);
+      if (result[0] === undefined) {
+        var url = "https://videolan.com/vlc";
+        var label = "Visit VLC today!";
+      } else {
+        var url = result[0].url;
+        var label = "Listen on Youtube"; 
+      }
+      
     } else if (meta.artist === undefined) {
-      const search = await yt(`${meta.filename}`, { limit: 1 })
-      const resultunjson = JSON.stringify(search.items)
-      const result = JSON.parse(resultunjson)
-      var url = result[0].url
-      var label = "Listen on Youtube" 
+      const search = await yt(`${meta.filename}`, { limit: 1 });
+      const resultunjson = JSON.stringify(search.items);
+      const result = JSON.parse(resultunjson);
+      if (result[0] === undefined) {
+        var url = "https://videolan.com/vlc";
+        var label = "Visit VLC today!";
+      } else {
+        var url = result[0].url;
+        var label = "Listen on Youtube";
+      }
     } else {
-      const search = await yt(`${meta.title} ${meta.artist}`, { limit: 1 })
-      const resultunjson = JSON.stringify(search.items)
-      const result = JSON.parse(resultunjson)
-      var url = result[0].url
-      var label = "Listen on Youtube" 
+      const search = await yt(`${meta.title} ${meta.artist}`, { limit: 1 });
+      const resultunjson = JSON.stringify(search.items);
+      const result = JSON.parse(resultunjson);
+      var url = result[0].url;
+      var label = "Listen on Youtube";
     }
     
 
   } else {
-    var url = appleresponse.data.results[0].trackViewUrl
+    var url = appleresponse.data.results[0].trackViewUrl;
     
-    var label = "Listen on Apple Music"
+    var label = "Listen on Apple Music";
   }
-  
-
 
 
   const output = {
-    
+    // Shows file thats playing.. well most of the time
     details: meta.title || meta.filename || "Playing something..",
+    // Line 99 - 109 determines this
     largeImageText: largeImageTextIs,
+    // Sets album art depending on whats set in the file, or if album art cannot be found
     largeImageKey: artwork || "https://i.pinimg.com/originals/67/f6/cb/67f6cb14f862297e3c145014cdd6b635.jpg",
     smallImageKey: status.state,
     smallImageText: `Volume: ${Math.round(status.volume / 2.56)}%`,
@@ -179,9 +190,20 @@ module.exports = async (status) => {
     output.state = meta.now_playing || "Stream";
   } else if (meta.artist) {
     // if in an album
-    output.state = meta.artist;
-    // if the song is part of an album
-    if (meta.album) output.state += ` - ${meta.album}`;
+    if (meta.artist.length < 128) {
+      output.state = "Artist's name is too long for discord :/";
+    } else {
+      output.state = meta.artist;
+    }
+   
+    
+    if (meta.album.length <  128) {
+      output.state = meta.artist
+    } else {
+      if (meta.album) output.state += ` - ${meta.album}`;
+    }
+    // Checks if the song is part of an album
+    
     // display track #
     if (meta.track_number && meta.track_total && config.rpc.displayTrackNumber) {
       output.partySize = parseInt(meta.track_number, 10);
