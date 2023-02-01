@@ -47,15 +47,16 @@ module.exports = async (status) => {
     if (meta.title === undefined || meta.artist === undefined) {
     } else {
       if (appleresponse.data.results[0] === undefined) {
-        var testartwork = await albumArt(artist, options).then((data) => data);
-        if (testartwork === undefined) {
-          var artwork = config.rpc.largeIcon;
-          var fetched = "Nowhere";
-          var enableYoutubeButton = "true";
-        } else {
+        try{
+          var testartwork = await albumArt(artist, options).then((data) => data);
           var artwork = testartwork;
           var fetched = "Spotify";
           var enableYoutubeButton = true;
+        } catch (err) {
+          var artwork = config.rpc.largeIcon;
+          var fetched = "Nowhere";
+          var enableYoutubeButton = "true";
+          console.log(err)
         }
       } else {
         
