@@ -2,10 +2,10 @@
 
 ## Detached Mode (Best Experience)
 
-Out of the box, starting vlc-discord-rpc will open VLC, and closing VLC will close vlc-discord-rpc.
+Out of the box, starting vlc-rpc will open VLC, and closing VLC will close vlc-rpc.
 This is the "attached" mode, and it is the default because "it just works" in most cases.
 
-Detached mode will not open VLC for you, and closing VLC won't close vlc-discord-rpc.
+Detached mode will not open VLC for you, and closing VLC won't close vlc-rpc.
 It requires a bit of tweaking, but once it is configured, it allows you to open and close VLC as
 you normally would and still show a rich presence.
 
