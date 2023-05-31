@@ -37,13 +37,26 @@ module.exports = async (status) => {
   };
 
   if (meta.artist === undefined) {
-    var artist = "N/A"
-  } else {
-    if (meta.artist.length < 2) {
-      var artist = `${meta.artist} `
+    if (meta.albumartist === undefined) {
+      var artist = "N/A"
     } else {
-      var artist =  String(encodeURIComponent(meta.artist));
+      var artist = meta.albumartist
     }
+  } else {
+    if (meta.albumartist) {
+      if (meta.albumartist.length < 2) {
+        var artist = `${meta.albumartist} `
+      } else {
+        var artist =  String(encodeURIComponent(meta.albumartist));
+      }
+    } else {
+      if (meta.artist.length < 2) {
+        var artist = `${meta.artist} `
+      } else {
+        var artist =  String(encodeURIComponent(meta.artist));
+      }
+    }
+    
   }
   
   const options = {
@@ -53,7 +66,7 @@ module.exports = async (status) => {
   var appleresponse = await fetchArtworkApple(`${meta.title} ${decodeURI(artist)}`);
   
   if (config.rpc.whereToFetchOnline === 'apple') {
-    if (meta.title === undefined || artist === undefined) {
+    if (meta.title === undefined || artist === undefined || meta.albumartist) {
     } else {
       if (appleresponse.data.results[0] === undefined) {
         try{
@@ -88,6 +101,7 @@ module.exports = async (status) => {
     console.log(meta.title);
     console.log(meta.artist, artist);
     console.log(decodeURI(artist))
+    console.log(meta.albumartist)
   }
 
   if(config.rpc.changeButtonProvider === "youtube"){
