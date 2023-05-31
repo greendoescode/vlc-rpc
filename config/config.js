@@ -2,7 +2,7 @@ module.exports = {
 
   // The full path to your VLC executable
   // If left blank, typical defaults are used
-  vlcPath: "E:/Programs/VLC/vlc.exe",
+  vlcPath: "C:/Program Files/VideoLAN/VLC/vlc.exe",
   
   debug : "false",
 
@@ -50,7 +50,7 @@ module.exports = {
 
     // If true, VLC will not be opened for you.
     // Note: You must set a password
-    detached: true,
+    detached: false,
 
     // Changes the big icon of the rich presence
     // Some of the available icons are: vlc, vlcflat, vlcblue, vlcneon, vlcxmas
