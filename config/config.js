@@ -2,7 +2,7 @@ module.exports = {
 
   // The full path to your VLC executable
   // If left blank, typical defaults are used
-  vlcPath: "C:/Program Files/VideoLAN/VLC/vlc.exe",
+  vlcPath: "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe",
   
   debug : "false",
 
