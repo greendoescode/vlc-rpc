@@ -50,14 +50,14 @@ module.exports = async (status) => {
     album: String(encodeURIComponent(meta.album))
   }
 
-  var appleresponse = await fetchArtworkApple(`${meta.title} ${artist}`);
+  var appleresponse = await fetchArtworkApple(`${meta.title} ${decodeURI(artist)}`);
   
   if (config.rpc.whereToFetchOnline === 'apple') {
     if (meta.title === undefined || artist === undefined) {
     } else {
       if (appleresponse.data.results[0] === undefined) {
         try{
-          var testartwork = await albumArt(artist, options).then((data) => data);
+          var testartwork = await albumArt(decodeURI(artist), options).then((data) => data);
           var artwork = testartwork;
           var fetched = "Spotify";
           var enableYoutubeButton = true;
@@ -76,7 +76,7 @@ module.exports = async (status) => {
     }
     
   } else {
-    var artwork = await albumArt(artist, options).then((data) => data);
+    var artwork = await albumArt(decodeURI(artist), options).then((data) => data);
     var fetched = "Spotify";
   }
 
