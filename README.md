@@ -36,5 +36,5 @@ For advanced features, see [ADVANCED.md](./info/advanced.md).
  - This program does NOT allow you to stream media to others
 
 ## Known Bugs
- - If you get an error saying something along the lines of "Find 1 high severity vulnerability", run "npm audit fix".
+ - If you get an error saying something along the lines of "Find 1 high severity vulnerability", run "npm audit fix --force".
  - If you find any bugs, please report them in [Issues](https://github.com/GreenDiscord/vlc-rpc/issues) or the [Discord](https://discord.gg/CHegxjdFCD)
