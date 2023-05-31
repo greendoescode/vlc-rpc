@@ -36,10 +36,14 @@ module.exports = async (status) => {
     });
   };
 
-  if (meta.artist.length < 2) {
-    var artist = `${meta.artist} `
+  if (meta.artist === undefined) {
+    var artist = "N/A"
   } else {
-    var artist =  String(encodeURIComponent(meta.artist));
+    if (meta.artist.length < 2) {
+      var artist = `${meta.artist} `
+    } else {
+      var artist =  String(encodeURIComponent(meta.artist));
+    }
   }
   
   const options = {
@@ -83,6 +87,7 @@ module.exports = async (status) => {
     console.log(fetched);
     console.log(meta.title);
     console.log(meta.artist, artist);
+    console.log(decodeURI(artist))
   }
 
   if(config.rpc.changeButtonProvider === "youtube"){
@@ -102,7 +107,7 @@ module.exports = async (status) => {
 
   // Really not much
   if (config.rpc.largeImageText === "artist"){
-    var largeImageTextIs = artist;
+    var largeImageTextIs = decodeURI(artist);
   } else if (config.rpc.largeImageText === "album") {
     var largeImageTextIs = meta.album;
   } else if (config.rpc.largeImageText === "volume") {
@@ -139,7 +144,7 @@ module.exports = async (status) => {
         var label = "Listen on Youtube";
       }
     } else {
-      const search = await yt(`${meta.title} ${artist}`, { limit: 1 });
+      const search = await yt(`${meta.title} ${decodeURI(artist)}`, { limit: 1 });
       const resultunjson = JSON.stringify(search.items);
       const result = JSON.parse(resultunjson);
       var url = result[0].url;
@@ -186,7 +191,7 @@ module.exports = async (status) => {
         output.state += ` - Season ${meta.seasonNumber}`;
       }
     } else if (artist) {
-      output.state = artist;
+      output.state = decodeURI(artist);
     } else {
       output.state = `${(status.date || '')} Video`;
     }
@@ -198,12 +203,12 @@ module.exports = async (status) => {
     if (artist.length < 128) {
       output.state = "Artist's name is too long for discord :/";
     } else {
-      output.state = artist;
+      output.state = decodeURI(artist);
     }
    
     
     if (meta.album.length <  128) {
-      output.state = artist
+      output.state = decodeURI(artist)
     } else {
       if (meta.album) output.state += ` - ${meta.album}`;
     }

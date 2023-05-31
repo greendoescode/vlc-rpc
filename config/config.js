@@ -4,7 +4,7 @@ module.exports = {
   // If left blank, typical defaults are used
   vlcPath: "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe",
   
-  debug : "false",
+  debug : "true",
 
   console: {
     // Sets the "Presence Updated" text to off or on
@@ -30,7 +30,7 @@ module.exports = {
     updateInterval: 1000,
 
     // Change where to fetch the album artwork (spotify and apple only supported)
-    whereToFetchOnline: "apple",
+    whereToFetchOnline: "spotify",
 
     // Change the provider for the rpc button (youtube and apple only, not yet implemented)
     changeButtonProvider: "apple",
