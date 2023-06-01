@@ -4,7 +4,7 @@ module.exports = {
   // If left blank, typical defaults are used
   vlcPath: "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe",
   
-  debug : "true",
+  debug : "false",
 
   console: {
     // Sets the "Presence Updated" text to off or on
@@ -49,7 +49,7 @@ module.exports = {
     showStopped: true,
 
     // If true, VLC will not be opened for you.
-    // Note: You must set a password
+    // Note: You must set a password, go to info/advanced.md for instructions.
     detached: false,
 
     // Changes the big icon of the rich presence

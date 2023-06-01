@@ -11,6 +11,7 @@ const albumArt = require('album-art');
 const yt = require("ytsr");
 
 
+
 module.exports = async (status) => {
   // if playback is stopped
   if (status.state === 'stopped') {
@@ -23,6 +24,7 @@ module.exports = async (status) => {
     }; 
   } // else
   const { meta } = status.information.category;
+
 
 
   
@@ -102,6 +104,7 @@ module.exports = async (status) => {
     console.log(meta.artist, artist);
     console.log(decodeURI(artist))
     console.log(meta.albumartist)
+    console.log(status.stats.decodedvideo)
   }
 
   if(config.rpc.changeButtonProvider === "youtube"){
@@ -191,7 +194,7 @@ module.exports = async (status) => {
       ]
   };
   // if video
-  if (status.stats.decodedvideo > 0) { 
+  if(JSON.stringify(status.information.category).indexOf(`"Stream 'video/1'":`) >= 0) { 
     // if youtube video
     if (meta['YouTube Start Time'] !== undefined) {
       output.largeImageKey = 'youtube';
@@ -204,7 +207,7 @@ module.exports = async (status) => {
       if (meta.seasonNumber) {
         output.state += ` - Season ${meta.seasonNumber}`;
       }
-    } else if (artist) {
+    } else if (meta.artist) {
       output.state = decodeURI(artist);
     } else {
       output.state = `${(status.date || '')} Video`;
@@ -214,13 +217,14 @@ module.exports = async (status) => {
     output.state = meta.now_playing || "Stream";
   } else if (artist) {
     // if in an album
-    if (artist.length < 128) {
-      output.state = "Artist's name is too long for discord :/";
+    if (artist.length > 128) {
+      output.state = "N/A";
+      console.warn("Artist's name is too long for discord :/")
     } else {
       output.state = decodeURI(artist);
     }
-   
-    
+
+
     if (meta.album.length <  128) {
       output.state = decodeURI(artist)
     } else {
