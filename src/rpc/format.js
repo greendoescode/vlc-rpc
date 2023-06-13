@@ -87,7 +87,7 @@ module.exports = async (status) => {
     console.log(fetched);
     console.log(meta.title);
     console.log(meta.artist, artist);
-    console.log(decodeURI(artist))
+    console.log(display_artist)
     console.log(meta.albumartist)
     console.log(status.stats.decodedvideo)
   }
@@ -192,8 +192,8 @@ module.exports = async (status) => {
       if (meta.seasonNumber) {
         output.state += ` - Season ${meta.seasonNumber}`;
       }
-    } else if (meta.artist) {
-      output.state = decodeURI(artist);
+    } else if (display_artist) {
+      output.state = display_artist;
     } else {
       output.state = `${(status.date || '')} Video`;
     }
