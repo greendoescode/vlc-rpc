@@ -54,11 +54,11 @@ module.exports = async (status) => {
 
   var appleresponse = await fetchArtworkApple(`${meta.title} ${display_artist}`);
   
-  if (config.rpc.whereToFetchOnline === 'apple')
+  if (!(meta.title === undefined || display_artist === undefined))
   {
-    if (!(meta.title === undefined || display_artist === undefined))
+    if (config.rpc.whereToFetchOnline === 'apple')
     {
-      if (appleresponse.data.results[0] === undefined) {
+      if (appleresponse.length == 0 || appleresponse.data.results[0] === undefined) {
         try{
           var testartwork = await albumArt(display_artist, options).then((data) => data);
           var artwork = testartwork;
@@ -71,15 +71,13 @@ module.exports = async (status) => {
           console.log(err)
         }
       } else {
-        
         var artwork = appleresponse.data.results[0].artworkUrl100;
         var fetched = "Apple";
       }
-     
+    } else if (config.rpc.whereToFetchOnline === 'spotify') {
+      var artwork = await albumArt(display_artist, options).then((data) => data);
+      var fetched = "Spotify";
     }
-  } else {
-    var artwork = await albumArt(display_artist, options).then((data) => data);
-    var fetched = "Spotify";
   }
 
   
