@@ -27,7 +27,7 @@ module.exports = async (status) => {
 
 
 
-  
+
   const fetchArtworkApple = async (searchQuery) => {
     const params = {
       media: "music",
@@ -38,41 +38,29 @@ module.exports = async (status) => {
     });
   };
 
-  if (meta.artist === undefined) {
-    if (meta.albumartist === undefined) {
-      var artist = "N/A"
-    } else {
-      var artist = meta.albumartist
-    }
-  } else {
-    if (meta.albumartist) {
-      if (meta.albumartist.length < 2) {
-        var artist = `${meta.albumartist} `
-      } else {
-        var artist =  String(encodeURIComponent(meta.albumartist));
-      }
-    } else {
-      if (meta.artist.length < 2) {
-        var artist = `${meta.artist} `
-      } else {
-        var artist =  String(encodeURIComponent(meta.artist));
-      }
-    }
-    
+  let display_artist = undefined;
+  if (meta.albumartist)
+  {
+    display_artist = meta.albumartist + " ";
+  }
+  else if (meta.artist)
+  {
+    display_artist = meta.artist + " ";
   }
   
   const options = {
     album: String(encodeURIComponent(meta.album))
   }
 
-  var appleresponse = await fetchArtworkApple(`${meta.title} ${decodeURI(artist)}`);
+  var appleresponse = await fetchArtworkApple(`${meta.title} ${display_artist}`);
   
-  if (config.rpc.whereToFetchOnline === 'apple') {
-    if (meta.title === undefined || artist === undefined || meta.albumartist) {
-    } else {
-      if (appleresponse.data.results[0] === undefined) {
+  if (!(meta.title === undefined || display_artist === undefined))
+  {
+    if (config.rpc.whereToFetchOnline === 'apple')
+    {
+      if (appleresponse.length == 0 || appleresponse.data.results[0] === undefined) {
         try{
-          var testartwork = await albumArt(decodeURI(artist), options).then((data) => data);
+          var testartwork = await albumArt(display_artist, options).then((data) => data);
           var artwork = testartwork;
           var fetched = "Spotify";
           var enableYoutubeButton = true;
@@ -83,16 +71,13 @@ module.exports = async (status) => {
           console.log(err)
         }
       } else {
-        
         var artwork = appleresponse.data.results[0].artworkUrl100;
         var fetched = "Apple";
       }
-     
+    } else if (config.rpc.whereToFetchOnline === 'spotify') {
+      var artwork = await albumArt(display_artist, options).then((data) => data);
+      var fetched = "Spotify";
     }
-    
-  } else {
-    var artwork = await albumArt(decodeURI(artist), options).then((data) => data);
-    var fetched = "Spotify";
   }
 
   
@@ -102,7 +87,7 @@ module.exports = async (status) => {
     console.log(fetched);
     console.log(meta.title);
     console.log(meta.artist, artist);
-    console.log(decodeURI(artist))
+    console.log(display_artist)
     console.log(meta.albumartist)
     console.log(status.stats.decodedvideo)
   }
@@ -111,7 +96,7 @@ module.exports = async (status) => {
     var enableYoutubeButton = "true";
   } 
 
-  if (artist === undefined){
+  if (display_artist === undefined){
     var artwork = config.rpc.largeIcon;
     var fetched = "Nowhere";
     var enableYoutubeButton = "true";
@@ -149,7 +134,7 @@ module.exports = async (status) => {
         var label = "Listen on Youtube"; 
       }
       
-    } else if (artist === undefined) {
+    } else if (display_artist === undefined) {
       const search = await yt(`${meta.filename}`, { limit: 1 });
       const resultunjson = JSON.stringify(search.items);
       const result = JSON.parse(resultunjson);
@@ -161,7 +146,7 @@ module.exports = async (status) => {
         var label = "Listen on Youtube";
       }
     } else {
-      const search = await yt(`${meta.title} ${decodeURI(artist)}`, { limit: 1 });
+      const search = await yt(`${meta.title} ${display_artist}`, { limit: 1 });
       const resultunjson = JSON.stringify(search.items);
       const result = JSON.parse(resultunjson);
       var url = result[0].url;
@@ -194,7 +179,7 @@ module.exports = async (status) => {
       ]
   };
   // if video
-  if(JSON.stringify(status.information.category).indexOf(`"Stream 'video/1'":`) >= 0) { 
+  if(status.stats.decodedvideo > 0) {
     // if youtube video
     if (meta['YouTube Start Time'] !== undefined) {
       output.largeImageKey = 'youtube';
@@ -207,31 +192,29 @@ module.exports = async (status) => {
       if (meta.seasonNumber) {
         output.state += ` - Season ${meta.seasonNumber}`;
       }
-    } else if (meta.artist) {
-      output.state = decodeURI(artist);
+    } else if (display_artist) {
+      output.state = display_artist;
     } else {
       output.state = `${(status.date || '')} Video`;
     }
   } else if (meta.now_playing) {
     // if a stream
     output.state = meta.now_playing || "Stream";
-  } else if (artist) {
-    // if in an album
-    if (artist.length > 128) {
-      output.state = "N/A";
-      console.warn("Artist's name is too long for discord :/")
-    } else {
-      output.state = decodeURI(artist);
+  } else if (display_artist) {
+    // Add artist to the state
+    output.state = display_artist;
+
+    // Add album to the state if possible
+    if (meta.album)
+      output.state += ` - ${meta.album}`;
+
+    //Trim the state if too longdisplay_artist
+    if (output.state.length > 128)
+    {
+      console.warn("The string ('" + output.state + "') is too long for discord :/");
+      output.state = output.state.substring(0, 128);
     }
 
-
-    if (meta.album.length <  128) {
-      output.state = decodeURI(artist)
-    } else {
-      if (meta.album) output.state += ` - ${meta.album}`;
-    }
-    // Checks if the song is part of an album
-    
     // display track #
     if (meta.track_number && meta.track_total && config.rpc.displayTrackNumber) {
       output.partySize = parseInt(meta.track_number, 10);
