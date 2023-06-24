@@ -4,10 +4,7 @@
  */
 const { spawn } = require('child_process');
 const fs = require('fs');
-
-const configLoader = require('./helpers/configLoader.js');
-const config = configLoader.getOrInit();
-
+const config = require('./helpers/configLoader.js').getOrInit()
 const log = require('./helpers/lager.js');
 require('./rpc/client.js');
 
