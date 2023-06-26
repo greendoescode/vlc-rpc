@@ -5,7 +5,7 @@
 
 const fs = require('fs');
 const log = require('../helpers/lager.js');
-const config = require('../../config/config.js');
+const config = require('../helpers/configLoader.js').getOrInit();
 const axios = require('axios');
 const albumArt = require('album-art');
 const yt = require("ytsr");
