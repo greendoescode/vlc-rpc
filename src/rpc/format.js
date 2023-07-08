@@ -49,7 +49,7 @@ module.exports = async (status) => {
   }
   
   const options = {
-    album: String(encodeURIComponent(meta.album))
+    album: meta.album
   }
 
   var appleresponse = await fetchArtworkApple(`${meta.title} ${display_artist}`);

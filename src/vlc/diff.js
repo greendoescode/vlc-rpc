@@ -21,7 +21,8 @@ const last = {
 /**
  * @param {Function} callback<Object, Boolean>
  */
-module.exports = async (callback) => {
+
+async function detect(callback, retries = 5) {
   VLCClient.getStatus()
     .then((status) => {
       if (status.information) {
@@ -58,17 +59,30 @@ module.exports = async (callback) => {
       last.state = status.state;
       last.time = status.time;
     })
-    .catch((err) => {
+    .catch(async (err) => {
       if(err.code === "ECONNREFUSED") {
         if(detectVlc) {
-          console.log("Failed to reach VLC. Is it open?");
-          // clear the rich presence by sending stopped state
-          callback({state:"stopped"}, false);
+          console.log("Failed to reach VLC. Is it open? Retrying...");
+          if (retries > 0)
+          {
+            // Sleep for a second, then retry (in case VLC is still starting up)
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await detect(callback, retries - 1);
+          }
+          else
+          {
+            // Clear the rich presence by sending stopped state
+            callback({state:"stopped"}, false);
+            detectVlc = false;
+          }
         }
-      } else {
-        throw err;
       }
-      // VLC isn't likely to be open anymore
-      detectVlc = false;
+      else
+      {
+        throw err;
+        detectVlc = false;
+      }
     });
 };
+
+module.exports = detect;
