@@ -12,6 +12,67 @@ const yt = require("ytsr");
 
 
 
+// These functions provide uniform inteface for simple access to the APIs
+// They take artist album and song as the arguments and return object containing
+//   fetchedFrom, artworkUrl and joinUrl (or undefined where not applicable).
+const fetchers = {
+  "apple": async (artist, album, song) => {
+    const params = {
+      media: "music",
+      term: `${artist} ${song}`,
+    };
+    const result = await axios.get("https://itunes.apple.com/search", {
+      params,
+    });
+    if (result.data.resultCount == 0 || result.data.results[0] === undefined)
+    {
+      return {
+        fetchedFrom: undefined,
+        artworkUrl: undefined,
+        joinUrl: undefined
+      };
+    }
+    else
+    {
+      return {
+        fetchedFrom: "Apple Music",
+        artworkUrl: result.data.results[0].artworkUrl100,
+        joinUrl: result.data.results[0].trackViewUrl
+      };
+    }
+  },
+  "spotify": async (artist, album, song) => {
+    let result = await albumArt(artist, {album}).then((data) => data);
+    // TODO: how is failure indicated in the albumArt library?
+    return {
+      fetchedFrom: "Spotify",
+      artworkUrl: result,
+      joinUrl: undefined
+    };
+  },
+  "youtube": async (artist, album, song) => {
+    // This just crashes most of the time, no clue why
+    const result = await yt(encodeURI(`${artist} ${song}`), { limit: 1 });
+    if (result.items.length == 0)
+    {
+      return {
+        fetchedFrom: undefined,
+        artworkUrl: undefined,
+        joinUrl: undefined
+      };
+    }
+    else
+    {
+      return {
+        fetchedFrom: "Youtube",
+        artworkUrl: undefined,
+        joinUrl: result.items[0].url
+      };
+    }
+  }
+}
+
+
 module.exports = async (status) => {
   // if playback is stopped
   if (status.state === 'stopped') {
@@ -26,18 +87,9 @@ module.exports = async (status) => {
   const { meta } = status.information.category;
 
 
-
-
-  const fetchArtworkApple = async (searchQuery) => {
-    const params = {
-      media: "music",
-      term: searchQuery,
-    };
-    return axios.get("https://itunes.apple.com/search", {
-      params,
-    });
-  };
-
+  // Find correct artist name to display,
+  //  then append one character since Discord^{citation needed} doesn't like
+  //  when it's only one character.
   let display_artist = undefined;
   if (meta.albumartist)
   {
@@ -47,40 +99,51 @@ module.exports = async (status) => {
   {
     display_artist = meta.artist + " ";
   }
-  
-  const options = {
-    album: meta.album
-  }
 
-  var appleresponse = await fetchArtworkApple(`${meta.title} ${display_artist}`);
-  
-  if (!(meta.title === undefined || display_artist === undefined))
+  // Fetch artwork and join URLs
+  let artwork, fetched, joinUrl, joinLabel;
+
+  if (meta.title !== undefined && display_artist !== undefined)
   {
-    if (config.rpc.whereToFetchOnline === 'apple')
+    // Initial fetch for artwork
+    const fetchResult1 = await fetchers[config.rpc.whereToFetchOnline](display_artist, meta.album, meta.title);
+    if(fetchResult1.artworkUrl != undefined)
     {
-      if (appleresponse.length == 0 || appleresponse.data.results[0] === undefined) {
-        try{
-          var testartwork = await albumArt(display_artist, options).then((data) => data);
-          var artwork = testartwork;
-          var fetched = "Spotify";
-          var enableYoutubeButton = true;
-        } catch (err) {
-          var artwork = config.rpc.largeIcon;
-          var fetched = "Nowhere";
-          var enableYoutubeButton = "true";
-          console.log(err)
-        }
-      } else {
-        var artwork = appleresponse.data.results[0].artworkUrl100;
-        var fetched = "Apple";
+      artwork = fetchResult1.artworkUrl;
+      fetched = fetchResult1.fetchedFrom;
+    }
+    else
+    {
+      artwork = config.rpc.largeIcon;
+      fetched = "Nowhere";
+    }
+
+    // If desired artwork and join URL providers are the same,
+    //  use existing fetch, otherwise fetch the join URL
+    if (config.rpc.whereToFetchOnline === config.rpc.changeButtonProvider)
+    {
+      if (fetchResult1.joinUrl)
+      {
+        joinUrl = fetchResult1.joinUrl;
+        joinLabel = `Listen on ${fetchResult1.fetchedFrom}`;
       }
-    } else if (config.rpc.whereToFetchOnline === 'spotify') {
-      var artwork = await albumArt(display_artist, options).then((data) => data);
-      var fetched = "Spotify";
+    }
+    else
+    {
+      const fetchResult2 = await fetchers[config.rpc.changeButtonProvider](display_artist, meta.album, meta.title);
+      if(fetchResult2.joinUrl)
+      {
+        joinUrl = fetchResult2.joinUrl;
+        joinLabel = `Listen on ${fetchResult2.fetchedFrom}`;
+      }
     }
   }
+  else
+  {
+    artwork = config.rpc.largeIcon;
+    fetched = "Nowhere";
+  }
 
-  
   if (config.debug === 'true') {
     console.log(artwork);
     console.log(status.state);
@@ -92,92 +155,41 @@ module.exports = async (status) => {
     console.log(status.stats.decodedvideo)
   }
 
-  if(config.rpc.changeButtonProvider === "youtube"){
-    var enableYoutubeButton = "true";
-  } 
-
-  if (display_artist === undefined){
-    var artwork = config.rpc.largeIcon;
-    var fetched = "Nowhere";
-    var enableYoutubeButton = "true";
-  } else if (meta.title === undefined) {
-    var artwork = config.rpc.largeIcon;
-    var fetched = "Nowhere";
-    var enableYoutubeButton = "true";
-  }
-
-
-  // Really not much
+  // Large image hover text
+  let largeImageTextIs;
   if (config.rpc.largeImageText === "artist"){
-    var largeImageTextIs = decodeURI(artist);
+    largeImageTextIs = decodeURI(artist);
   } else if (config.rpc.largeImageText === "album") {
-    var largeImageTextIs = meta.album;
+    largeImageTextIs = meta.album;
   } else if (config.rpc.largeImageText === "volume") {
-    var largeImageTextIs = `Volume: ${Math.round(status.volume / 2.56)}%`;
+    largeImageTextIs = `Volume: ${Math.round(status.volume / 2.56)}%`;
   } else if (config.rpc.largeImageText === "title") {
-    var largeImageTextIs = meta.title;
+    largeImageTextIs = meta.title;
   } else if (config.rpc.largeImageText === "fetched") {
-    var largeImageTextIs = `Artwork fetched from ${fetched}`;
-  }
-  
-// Checks if youtube button is turned on in the config, then searches the names on youtube
-  if(enableYoutubeButton){
-    if (meta.title === undefined) {
-      const search = await yt(`${meta.filename}`, { limit: 1 });
-      const resultunjson = JSON.stringify(search.items);
-      const result = JSON.parse(resultunjson);
-      if (result[0] === undefined) {
-        var url = "https://videolan.com/vlc";
-        var label = "Visit VLC today!";
-      } else {
-        var url = result[0].url;
-        var label = "Listen on Youtube"; 
-      }
-      
-    } else if (display_artist === undefined) {
-      const search = await yt(`${meta.filename}`, { limit: 1 });
-      const resultunjson = JSON.stringify(search.items);
-      const result = JSON.parse(resultunjson);
-      if (result[0] === undefined) {
-        var url = "https://videolan.com/vlc";
-        var label = "Visit VLC today!";
-      } else {
-        var url = result[0].url;
-        var label = "Listen on Youtube";
-      }
-    } else {
-      const search = await yt(`${meta.title} ${display_artist}`, { limit: 1 });
-      const resultunjson = JSON.stringify(search.items);
-      const result = JSON.parse(resultunjson);
-      var url = result[0].url;
-      var label = "Listen on Youtube";
-    }
-    
-
-  } else {
-    var url = appleresponse.data.results[0].trackViewUrl;
-    
-    var label = "Listen on Apple Music";
+    largeImageTextIs = `Artwork fetched from ${fetched}`;
   }
 
-
-  const output = {
+  output = {
     // Shows file thats playing.. well most of the time
     details: meta.title || meta.filename || "Playing something..",
-    // Line 99 - 109 determines this
     largeImageText: largeImageTextIs,
     // Sets album art depending on whats set in the file, or if album art cannot be found
     largeImageKey: artwork || "https://i.pinimg.com/originals/67/f6/cb/67f6cb14f862297e3c145014cdd6b635.jpg",
     smallImageKey: status.state,
     smallImageText: `Volume: ${Math.round(status.volume / 2.56)}%`,
     instance: true,
-    buttons: [
-        {
-          label: label,
-          url: url,
-        },
-      ]
   };
+  
+  if (joinUrl && joinLabel)
+  {
+    output.buttons = [
+      {
+        label: joinLabel,
+        url: joinUrl
+      }
+    ];
+  }
+  
   // if video
   if(status.stats.decodedvideo > 0) {
     // if youtube video
