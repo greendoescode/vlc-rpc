@@ -51,9 +51,24 @@ const fetchers = {
     };
   },
   "youtube": async (artist, album, song) => {
-    // This just crashes most of the time, no clue why
-    const result = await yt(encodeURI(`${artist} ${song}`), { limit: 1 });
-    if (result.items.length == 0)
+    try
+    {
+      // This just crashes most of the time, no clue why, hence the try-catch-finally
+      const result = await yt(encodeURI(`${artist} ${song}`), { limit: 1 });
+      if (result.items.length > 0)
+      {
+        return {
+          fetchedFrom: "Youtube",
+          artworkUrl: undefined,
+          joinUrl: result.items[0].url
+        };
+      }
+    }
+    catch(err)
+    {
+      console.log(err);
+    }
+    finally
     {
       return {
         fetchedFrom: undefined,
@@ -61,15 +76,73 @@ const fetchers = {
         joinUrl: undefined
       };
     }
-    else
+  }
+}
+
+// Fetches both artwork and join URL if possible,
+// Returns object containing artworkUrl, artworkFrom, joinUrl and joinFrom
+async function combinedFetch(preferredArtworkProvider, preferredJoinProvider, artist, album, song)
+{
+  let artworkUrl, artworkFrom, joinUrl, joinFrom;
+  let results = [];
+
+  // First try fetching artwork URL using preferred provider
+  if (preferredArtworkProvider in fetchers)
+  {
+    results[preferredArtworkProvider] = await fetchers[preferredArtworkProvider](artist, album, song);
+    if(results[preferredArtworkProvider].artworkUrl)
     {
-      return {
-        fetchedFrom: "Youtube",
-        artworkUrl: undefined,
-        joinUrl: result.items[0].url
-      };
+      artworkUrl = results[preferredArtworkProvider].artworkUrl;
+      artworkFrom = results[preferredArtworkProvider].fetchedFrom;
     }
   }
+
+  // Next try fetching join URL
+  if (preferredArtworkProvider !== preferredJoinProvider
+      && preferredJoinProvider in fetchers)
+  {
+    results[preferredJoinProvider] = await fetchers[preferredJoinProvider](artist, album, song);
+    if (results[preferredJoinProvider].joinUrl)
+    {
+      joinUrl = results[preferredJoinProvider].joinUrl;
+      joinFrom = results[preferredJoinProvider].fetchedFrom;
+    }
+  }
+
+  // Try using preferred join provider as a backup artwork provider and vice versa
+  if (!artworkUrl && results[preferredJoinProvider].artworkUrl)
+  {
+    artworkUrl = results[preferredJoinProvider].artworkUrl;
+    artworkFrom = results[preferredJoinProvider].fetchedFrom;
+  }
+  if (!joinUrl && results[preferredArtworkProvider].joinUrl)
+  {
+    joinUrl = results[preferredArtworkProvider].joinUrl;
+    joinFrom = results[preferredArtworkProvider].fetchedFrom;
+  }
+
+  // In case either still isn't set, iterate all other providers
+  let availableProviderNames = Object.keys(fetchers);
+  for (let ii = 0; (!artworkUrl || !joinUrl) && ii < availableProviderNames.length; ++ii)
+  {
+    if (!(availableProviderNames[ii] in results))
+    {
+      results[availableProviderNames[ii]] = await fetchers[availableProviderNames[ii]](artist, album, song);
+      if(!artworkUrl && results[availableProviderNames[ii]].artworkUrl)
+      {
+        artworkUrl = results[availableProviderNames[ii]].artworkUrl;
+        artworkFrom = results[availableProviderNames[ii]].fetchedFrom;
+      }
+      if (!joinUrl && results[availableProviderNames[ii]].joinUrl)
+      {
+        joinUrl = results[availableProviderNames[ii]].joinUrl;
+        joinFrom = results[availableProviderNames[ii]].fetchedFrom;
+      }
+    }
+  }
+
+  // Return selected results
+  return {artworkUrl, artworkFrom, joinUrl, joinFrom};
 }
 
 
@@ -105,12 +178,13 @@ module.exports = async (status) => {
 
   if (meta.title !== undefined && display_artist !== undefined)
   {
-    // Initial fetch for artwork
-    const fetchResult1 = await fetchers[config.rpc.whereToFetchOnline](display_artist, meta.album, meta.title);
-    if(fetchResult1.artworkUrl != undefined)
+    const fetchResult = await combinedFetch(config.rpc.whereToFetchOnline, config.rpc.changeButtonProvider, display_artist, meta.album, meta.title);
+
+    // Set artwork URL if present
+    if(fetchResult.artworkUrl != undefined)
     {
-      artwork = fetchResult1.artworkUrl;
-      fetched = fetchResult1.fetchedFrom;
+      artwork = fetchResult.artworkUrl;
+      fetched = fetchResult.artworkFrom;
     }
     else
     {
@@ -118,24 +192,11 @@ module.exports = async (status) => {
       fetched = "Nowhere";
     }
 
-    // If desired artwork and join URL providers are the same,
-    //  use existing fetch, otherwise fetch the join URL
-    if (config.rpc.whereToFetchOnline === config.rpc.changeButtonProvider)
+    // Set join URL if present
+    if (fetchResult.joinUrl)
     {
-      if (fetchResult1.joinUrl)
-      {
-        joinUrl = fetchResult1.joinUrl;
-        joinLabel = `Listen on ${fetchResult1.fetchedFrom}`;
-      }
-    }
-    else
-    {
-      const fetchResult2 = await fetchers[config.rpc.changeButtonProvider](display_artist, meta.album, meta.title);
-      if(fetchResult2.joinUrl)
-      {
-        joinUrl = fetchResult2.joinUrl;
-        joinLabel = `Listen on ${fetchResult2.fetchedFrom}`;
-      }
+      joinUrl = fetchResult.joinUrl;
+      joinLabel = `Listen on ${fetchResult.joinFrom}`;
     }
   }
   else
