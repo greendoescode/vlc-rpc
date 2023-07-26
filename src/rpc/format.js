@@ -16,21 +16,21 @@ const yt = require("ytsr");
 // They take artist album and song as the arguments and return object containing
 //   fetchedFrom, artworkUrl and joinUrl (or undefined where not applicable).
 const fetchers = {
-  "apple": async (artist, album, song) => {
+  "apple": async (metadata) => {
+    if ((!metadata.albumartist && !metadata.artist) || !metadata.title)
+    {
+      return {};
+    }
     const params = {
       media: "music",
-      term: `${artist} ${song}`,
+      term: `${metadata.albumartist ? metadata.albumartist : metadata.artist} ${metadata.title}`,
     };
     const result = await axios.get("https://itunes.apple.com/search", {
       params,
     });
     if (result.data.resultCount == 0 || result.data.results[0] === undefined)
     {
-      return {
-        fetchedFrom: undefined,
-        artworkUrl: undefined,
-        joinUrl: undefined
-      };
+      return {};
     }
     else
     {
@@ -41,23 +41,42 @@ const fetchers = {
       };
     }
   },
-  "spotify": async (artist, album, song) => {
-    let result = await albumArt(artist, {album}).then((data) => data);
-    // TODO: how is failure indicated in the albumArt library?
-    return {
-      fetchedFrom: "Spotify",
-      artworkUrl: result,
-      joinUrl: undefined
-    };
+  "spotify": async (metadata) => {
+    let returnValue;
+    try
+    {
+      if ((!metadata.albumartist && !metadata.artist) || !metadata.album)
+      {
+        return {};
+      }
+
+      let result = await albumArt(metadata.albumartist ? metadata.albumartist : metadata.artist,
+                                  {album: metadata.album}).then((data) => data);
+      // TODO: how is failure indicated in the albumArt library?
+      returnValue = {
+        fetchedFrom: "Spotify",
+        artworkUrl: result,
+        joinUrl: undefined
+      }
+    }
+    catch(err)
+    {
+      console.log(err);
+    }
+    finally
+    {
+      return (returnValue ? returnValue : {});
+    }
   },
-  "youtube": async (artist, album, song) => {
+  "youtube": async (metadata) => {
+    let returnValue;
     try
     {
       // This just crashes most of the time, no clue why, hence the try-catch-finally
-      const result = await yt(encodeURI(`${artist} ${song}`), { limit: 1 });
+      const result = await yt(`${metadata.albumartist ? metadata.albumartist : (metadata.artist ? metadata.artist : "")} ${metadata.title ? metadata.title : metadata.filename}`.trim(), { limit: 1 });
       if (result.items.length > 0)
       {
-        return {
+        returnValue = {
           fetchedFrom: "Youtube",
           artworkUrl: undefined,
           joinUrl: result.items[0].url
@@ -70,18 +89,14 @@ const fetchers = {
     }
     finally
     {
-      return {
-        fetchedFrom: undefined,
-        artworkUrl: undefined,
-        joinUrl: undefined
-      };
+      return (returnValue ? returnValue : {});
     }
   }
 }
 
 // Fetches both artwork and join URL if possible,
 // Returns object containing artworkUrl, artworkFrom, joinUrl and joinFrom
-async function combinedFetch(preferredArtworkProvider, preferredJoinProvider, artist, album, song)
+async function combinedFetch(preferredArtworkProvider, preferredJoinProvider, metadata)
 {
   let artworkUrl, artworkFrom, joinUrl, joinFrom;
   let results = [];
@@ -89,7 +104,7 @@ async function combinedFetch(preferredArtworkProvider, preferredJoinProvider, ar
   // First try fetching artwork URL using preferred provider
   if (preferredArtworkProvider in fetchers)
   {
-    results[preferredArtworkProvider] = await fetchers[preferredArtworkProvider](artist, album, song);
+    results[preferredArtworkProvider] = await fetchers[preferredArtworkProvider](metadata);
     if(results[preferredArtworkProvider].artworkUrl)
     {
       artworkUrl = results[preferredArtworkProvider].artworkUrl;
@@ -97,16 +112,18 @@ async function combinedFetch(preferredArtworkProvider, preferredJoinProvider, ar
     }
   }
 
-  // Next try fetching join URL
-  if (preferredArtworkProvider !== preferredJoinProvider
-      && preferredJoinProvider in fetchers)
+  // Next try fetching join URL from preferred provider
+  if (preferredJoinProvider in fetchers
+      && preferredArtworkProvider !== preferredJoinProvider)
   {
-    results[preferredJoinProvider] = await fetchers[preferredJoinProvider](artist, album, song);
-    if (results[preferredJoinProvider].joinUrl)
-    {
-      joinUrl = results[preferredJoinProvider].joinUrl;
-      joinFrom = results[preferredJoinProvider].fetchedFrom;
-    }
+    results[preferredJoinProvider] = await fetchers[preferredJoinProvider](metadata);
+  }
+  // Set it separately, in case both preferred providers are the same
+  if (preferredJoinProvider in results
+      && results[preferredJoinProvider].joinUrl)
+  {
+    joinUrl = results[preferredJoinProvider].joinUrl;
+    joinFrom = results[preferredJoinProvider].fetchedFrom;
   }
 
   // Try using preferred join provider as a backup artwork provider and vice versa
@@ -127,7 +144,7 @@ async function combinedFetch(preferredArtworkProvider, preferredJoinProvider, ar
   {
     if (!(availableProviderNames[ii] in results))
     {
-      results[availableProviderNames[ii]] = await fetchers[availableProviderNames[ii]](artist, album, song);
+      results[availableProviderNames[ii]] = await fetchers[availableProviderNames[ii]](metadata);
       if(!artworkUrl && results[availableProviderNames[ii]].artworkUrl)
       {
         artworkUrl = results[availableProviderNames[ii]].artworkUrl;
@@ -159,37 +176,18 @@ module.exports = async (status) => {
   } // else
   const { meta } = status.information.category;
 
-
-  // Find correct artist name to display,
-  //  then append one character since Discord^{citation needed} doesn't like
-  //  when it's only one character.
-  let display_artist = undefined;
-  if (meta.albumartist)
-  {
-    display_artist = meta.albumartist + " ";
-  }
-  else if (meta.artist)
-  {
-    display_artist = meta.artist + " ";
-  }
-
   // Fetch artwork and join URLs
-  let artwork, fetched, joinUrl, joinLabel;
+  let artwork = config.rpc.largeIcon, fetched = "Nowhere", joinUrl, joinLabel;
 
-  if (meta.title !== undefined && display_artist !== undefined)
   {
-    const fetchResult = await combinedFetch(config.rpc.whereToFetchOnline, config.rpc.changeButtonProvider, display_artist, meta.album, meta.title);
+    const fetchResult
+      = await combinedFetch(config.rpc.whereToFetchOnline, config.rpc.changeButtonProvider, meta);
 
     // Set artwork URL if present
     if(fetchResult.artworkUrl != undefined)
     {
       artwork = fetchResult.artworkUrl;
       fetched = fetchResult.artworkFrom;
-    }
-    else
-    {
-      artwork = config.rpc.largeIcon;
-      fetched = "Nowhere";
     }
 
     // Set join URL if present
@@ -199,21 +197,13 @@ module.exports = async (status) => {
       joinLabel = `Listen on ${fetchResult.joinFrom}`;
     }
   }
-  else
-  {
-    artwork = config.rpc.largeIcon;
-    fetched = "Nowhere";
-  }
 
   if (config.debug === 'true') {
     console.log(artwork);
     console.log(status.state);
     console.log(fetched);
-    console.log(meta.title);
-    console.log(meta.artist, artist);
-    console.log(display_artist)
-    console.log(meta.albumartist)
-    console.log(status.stats.decodedvideo)
+    console.log(meta);
+    console.log(status.stats.decodedvideo);
   }
 
   // Large image hover text
@@ -230,7 +220,7 @@ module.exports = async (status) => {
     largeImageTextIs = `Artwork fetched from ${fetched}`;
   }
 
-  output = {
+  let output = {
     // Shows file thats playing.. well most of the time
     details: meta.title || meta.filename || "Playing something..",
     largeImageText: largeImageTextIs,
@@ -250,16 +240,26 @@ module.exports = async (status) => {
       }
     ];
   }
-  
-  // if video
-  if(status.stats.decodedvideo > 0) {
-    // if youtube video
-    if (meta['YouTube Start Time'] !== undefined) {
+
+  // Find correct artist name to display,
+  //  then append one character since Discord state must be at least two characters long
+  let display_artist = (meta.albumartist
+                        ? meta.albumartist + " "
+                        : (meta.artist
+                           ? meta.artist + " "
+                           : undefined));
+
+  if(status.stats.decodedvideo > 0)
+  { // if video
+    if (meta['YouTube Start Time'] !== undefined)
+    { // if youtube video
       output.largeImageKey = 'youtube';
       output.largeImageText = meta.url;
     }
-    // if a tv show
-    if (meta.showName) output.details = meta.showName;
+    if (meta.showName)
+    { // if a tv show
+      output.details = meta.showName;
+    }
     if (meta.episodeNumber) {
       output.state = `Episode ${meta.episodeNumber}`;
       if (meta.seasonNumber) {
@@ -270,10 +270,14 @@ module.exports = async (status) => {
     } else {
       output.state = `${(status.date || '')} Video`;
     }
-  } else if (meta.now_playing) {
-    // if a stream
+  }
+  else if (meta.now_playing)
+  { // if a stream
     output.state = meta.now_playing || "Stream";
-  } else if (display_artist) {
+  }
+  else if (display_artist)
+  { // if a song
+
     // Add artist to the state
     output.state = display_artist;
 
@@ -281,19 +285,22 @@ module.exports = async (status) => {
     if (meta.album)
       output.state += ` - ${meta.album}`;
 
-    //Trim the state if too longdisplay_artist
+    // Trim the state if too long
     if (output.state.length > 128)
     {
       console.warn("The string ('" + output.state + "') is too long for discord :/");
       output.state = output.state.substring(0, 128);
     }
 
-    // display track #
-    if (meta.track_number && meta.track_total && config.rpc.displayTrackNumber) {
+    // Display track number
+    if (meta.track_number && meta.track_total && config.rpc.displayTrackNumber)
+    {
       output.partySize = parseInt(meta.track_number, 10);
       output.partyMax = parseInt(meta.track_total, 10);
     }
-  } else {
+  }
+  else
+  {
     output.state = status.state;
   }
   const end = Math.floor(Date.now() / 1000 + ((status.length - status.time) / status.rate));
