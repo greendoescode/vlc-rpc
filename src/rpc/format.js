@@ -12,115 +12,107 @@ const yt = require("ytsr");
 
 
 
-// These functions provide uniform inteface for simple access to the APIs
-// They take artist album and song as the arguments and return object containing
+// These functions, 'fetchers', provide uniform inteface for simple access to the APIs
+// They take artist album and song as the arguments and on success return object containing
 //   fetchedFrom, artworkUrl and joinUrl (or undefined where not applicable).
+// In order to be as simple as possible, the functions may throw exceptions or not return anything.
+//   They are expected to be called through the `fetchSafely()` wrapper.
 const fetchers = {
   "apple": async (metadata) => {
-    if ((!metadata.albumartist && !metadata.artist) || !metadata.title)
+    if ((metadata.albumartist || metadata.artist) && metadata.title)
     {
-      return {};
-    }
-    const params = {
-      media: "music",
-      term: `${metadata.albumartist ? metadata.albumartist : metadata.artist} ${metadata.title}`,
-    };
-    const result = await axios.get("https://itunes.apple.com/search", {
-      params,
-    });
-    if (result.data.resultCount == 0 || result.data.results[0] === undefined)
-    {
-      return {};
-    }
-    else
-    {
-      return {
-        fetchedFrom: "Apple Music",
-        artworkUrl: result.data.results[0].artworkUrl100,
-        joinUrl: result.data.results[0].trackViewUrl
-      };
+      const result = await axios.get("https://itunes.apple.com/search", {
+        params: {
+          media: "music",
+          term: `${metadata.albumartist ? metadata.albumartist : metadata.artist} ${metadata.title}`,
+        }
+      });
+      if (result.data.resultCount > 0 && result.data.results[0] !== undefined)
+      {
+        returnValue = {
+          fetchedFrom: "Apple Music",
+          artworkUrl: result.data.results[0].artworkUrl100,
+          joinUrl: result.data.results[0].trackViewUrl
+        };
+      }
     }
   },
   "spotify": async (metadata) => {
-    let returnValue;
-    try
+    if ((metadata.albumartist || metadata.artist) && metadata.album)
     {
-      if ((!metadata.albumartist && !metadata.artist) || !metadata.album)
-      {
-        return {};
-      }
-
-      let result = await albumArt(metadata.albumartist ? metadata.albumartist : metadata.artist,
-                                  {album: metadata.album}).then((data) => data);
+      const result = await albumArt(metadata.albumartist ? metadata.albumartist : metadata.artist,
+                                    {album: metadata.album}).then((data) => data);
       // TODO: how is failure indicated in the albumArt library?
-      returnValue = {
+      return {
         fetchedFrom: "Spotify",
         artworkUrl: result,
         joinUrl: undefined
       }
     }
-    catch(err)
-    {
-      console.log(err);
-    }
-    finally
-    {
-      return (returnValue ? returnValue : {});
-    }
   },
   "youtube": async (metadata) => {
-    let returnValue;
-    try
+    const result = await yt(`${metadata.albumartist ? metadata.albumartist : (metadata.artist ? metadata.artist : "")} ${metadata.title ? metadata.title : metadata.filename}`.trim(), { limit: 1 });
+    if (result.items.length > 0)
     {
-      // This just crashes most of the time, no clue why, hence the try-catch-finally
-      const result = await yt(`${metadata.albumartist ? metadata.albumartist : (metadata.artist ? metadata.artist : "")} ${metadata.title ? metadata.title : metadata.filename}`.trim(), { limit: 1 });
-      if (result.items.length > 0)
-      {
-        returnValue = {
-          fetchedFrom: "Youtube",
-          artworkUrl: undefined,
-          joinUrl: result.items[0].url
-        };
-      }
-    }
-    catch(err)
-    {
-      console.log(err);
-    }
-    finally
-    {
-      return (returnValue ? returnValue : {});
+      return {
+        fetchedFrom: "Youtube",
+        artworkUrl: undefined,
+        joinUrl: result.items[0].url
+      };
     }
   }
 }
 
-// Fetches both artwork and join URL if possible,
-// Returns object containing artworkUrl, artworkFrom, joinUrl and joinFrom
+/**
+ * Safe wrapper for calling a fetcher in try-catch block
+ * @param {string} fetcherName name of the fetcher to use
+ * @param {Object} metadata    VLC metadata
+ * @returns {!{fetchedFrom: string, artworkUrl: string, joinUrl: string}}
+ */
+async function fetchSafely(fetcherName, metadata)
+{
+  let returnValue;
+  try
+  {
+    returnValue = await fetchers[fetcherName](metadata);
+  }
+  catch (err)
+  {
+    console.log(err);
+  }
+  finally
+  {
+    return (returnValue ? returnValue : {});
+  }
+}
+
+/**
+ * Fetches both artwork and join URL if possible
+ * @param {string} preferredArtworkProvider name of preferred artwork fetcher
+ * @param {string} preferredJoinProvider    name of preferred join fetcher
+ * @param {Object} metadata                 VLC metadata
+ * @returns {!{artworkUrl: string, artworkFrom: string, joinUrl: string, joinFrom: string}}
+ */
 async function combinedFetch(preferredArtworkProvider, preferredJoinProvider, metadata)
 {
   let artworkUrl, artworkFrom, joinUrl, joinFrom;
   let results = [];
 
   // First try fetching artwork URL using preferred provider
-  if (preferredArtworkProvider in fetchers)
+  results[preferredArtworkProvider] = await fetchSafely(preferredArtworkProvider, metadata);
+  if(results[preferredArtworkProvider].artworkUrl)
   {
-    results[preferredArtworkProvider] = await fetchers[preferredArtworkProvider](metadata);
-    if(results[preferredArtworkProvider].artworkUrl)
-    {
-      artworkUrl = results[preferredArtworkProvider].artworkUrl;
-      artworkFrom = results[preferredArtworkProvider].fetchedFrom;
-    }
+    artworkUrl = results[preferredArtworkProvider].artworkUrl;
+    artworkFrom = results[preferredArtworkProvider].fetchedFrom;
   }
 
   // Next try fetching join URL from preferred provider
-  if (preferredJoinProvider in fetchers
-      && preferredArtworkProvider !== preferredJoinProvider)
+  if (preferredArtworkProvider !== preferredJoinProvider)
   {
-    results[preferredJoinProvider] = await fetchers[preferredJoinProvider](metadata);
+    results[preferredJoinProvider] = await fetchSafely(preferredJoinProvider, metadata);
   }
   // Set it separately, in case both preferred providers are the same
-  if (preferredJoinProvider in results
-      && results[preferredJoinProvider].joinUrl)
+  if (results[preferredJoinProvider].joinUrl)
   {
     joinUrl = results[preferredJoinProvider].joinUrl;
     joinFrom = results[preferredJoinProvider].fetchedFrom;
@@ -144,7 +136,7 @@ async function combinedFetch(preferredArtworkProvider, preferredJoinProvider, me
   {
     if (!(availableProviderNames[ii] in results))
     {
-      results[availableProviderNames[ii]] = await fetchers[availableProviderNames[ii]](metadata);
+      results[availableProviderNames[ii]] = await fetchSafely(availableProviderNames[ii], metadata);
       if(!artworkUrl && results[availableProviderNames[ii]].artworkUrl)
       {
         artworkUrl = results[availableProviderNames[ii]].artworkUrl;
