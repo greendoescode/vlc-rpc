@@ -13,7 +13,7 @@ const yt = require("ytsr");
 
 
 // These functions, 'fetchers', provide uniform inteface for simple access to the APIs
-// They take artist album and song as the arguments and on success return object containing
+// They take VLC metadata as the argument and on success return object containing
 //   fetchedFrom, artworkUrl and joinUrl (or undefined where not applicable).
 // In order to be as simple as possible, the functions may throw exceptions or not return anything.
 //   They are expected to be called through the `fetchSafely()` wrapper.
@@ -87,7 +87,7 @@ async function fetchSafely(fetcherName, metadata)
 }
 
 /**
- * Fetches both artwork and join URL if possible
+ * Fetches both artwork URL and join URL if possible
  * @param {string} preferredArtworkProvider name of preferred artwork fetcher
  * @param {string} preferredJoinProvider    name of preferred join fetcher
  * @param {Object} metadata                 VLC metadata
@@ -170,19 +170,18 @@ module.exports = async (status) => {
 
   // Fetch artwork and join URLs
   let artwork = config.rpc.largeIcon, fetched = "Nowhere", joinUrl, joinLabel;
-
   {
     const fetchResult
       = await combinedFetch(config.rpc.whereToFetchOnline, config.rpc.changeButtonProvider, meta);
 
-    // Set artwork URL if present
-    if(fetchResult.artworkUrl != undefined)
+    // Use artwork URL if present
+    if(fetchResult.artworkUrl)
     {
       artwork = fetchResult.artworkUrl;
       fetched = fetchResult.artworkFrom;
     }
 
-    // Set join URL if present
+    // Use join URL if present
     if (fetchResult.joinUrl)
     {
       joinUrl = fetchResult.joinUrl;
