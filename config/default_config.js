@@ -20,8 +20,9 @@ module.exports = {
 
   rpc: {
     
-    // Set the text for the large image, this accepts, title, album, volume, artist and fetched.
+    // Set the hover text for the images, accepts "title", "artist", "album", "volume" and "fetched".
     largeImageText: "fetched",
+    smallImageText: "volume",
 
     // The Discord application ID for the rich presence
     id: '1032293686098272316',

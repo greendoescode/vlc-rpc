@@ -197,28 +197,52 @@ module.exports = async (status) => {
     console.log(status.stats.decodedvideo);
   }
 
-  // Large image hover text
-  let largeImageTextIs;
-  if (config.rpc.largeImageText === "artist"){
-    largeImageTextIs = decodeURI(artist);
-  } else if (config.rpc.largeImageText === "album") {
-    largeImageTextIs = meta.album;
-  } else if (config.rpc.largeImageText === "volume") {
-    largeImageTextIs = `Volume: ${Math.round(status.volume / 2.56)}%`;
-  } else if (config.rpc.largeImageText === "title") {
-    largeImageTextIs = meta.title;
-  } else if (config.rpc.largeImageText === "fetched") {
-    largeImageTextIs = `Artwork fetched from ${fetched}`;
-  }
+  // Find correct artist name to display,
+  //  then append one character since Discord state must be at least two characters long
+  let display_artist = (meta.albumartist
+                        ? meta.albumartist + " "
+                        : (meta.artist
+                           ? meta.artist + " "
+                           : undefined));
+
+  // Large and small image hover texts
+  let hoverTexts = [config.rpc.largeImageText, config.rpc.smallImageText].map(
+    (opt) => {
+      if (opt === "artist")
+      {
+        return display_artist;
+      }
+      else if (opt === "album")
+      {
+        return meta.album;
+      }
+      else if (opt === "volume")
+      {
+        return `Volume: ${Math.round(status.volume / 2.56)}%`;
+      }
+      else if (opt === "title")
+      {
+        return meta.title;
+      }
+      else if (opt === "fetched")
+      {
+        return `Artwork fetched from ${fetched}`;
+      }
+      else
+      {
+        return undefined;
+      }
+    }
+  );
 
   let output = {
     // Shows file thats playing.. well most of the time
     details: meta.title || meta.filename || "Playing something..",
-    largeImageText: largeImageTextIs,
+    largeImageText: hoverTexts[0],
     // Sets album art depending on whats set in the file, or if album art cannot be found
     largeImageKey: artwork || "https://i.pinimg.com/originals/67/f6/cb/67f6cb14f862297e3c145014cdd6b635.jpg",
     smallImageKey: status.state,
-    smallImageText: `Volume: ${Math.round(status.volume / 2.56)}%`,
+    smallImageText: hoverTexts[1] || `Volume: ${Math.round(status.volume / 2.56)}%`,
     instance: true,
   };
   
@@ -231,14 +255,6 @@ module.exports = async (status) => {
       }
     ];
   }
-
-  // Find correct artist name to display,
-  //  then append one character since Discord state must be at least two characters long
-  let display_artist = (meta.albumartist
-                        ? meta.albumartist + " "
-                        : (meta.artist
-                           ? meta.artist + " "
-                           : undefined));
 
   if(status.stats.decodedvideo > 0)
   { // if video
