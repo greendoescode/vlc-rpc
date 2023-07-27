@@ -10,3 +10,9 @@ if NOT EXIST node_modules (
 )
 ECHO Starting script...
 CALL npm start
+
+if errorlevel 1 (
+    if "%1" == "--keep-on-error" (
+        pause
+    )
+)
