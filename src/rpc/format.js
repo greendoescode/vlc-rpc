@@ -8,8 +8,52 @@ const log = require('../helpers/lager.js');
 const config = require('../helpers/configLoader.js').getOrInit();
 const axios = require('axios');
 const yt = require("ytsr");
+const path = require("path")
 const levenshtein = require("js-levenshtein");
 
+const CACHE_FILE_PATH = './cache.json'
+
+// Load cache from file during application startup
+let cache = {};
+
+function loadCacheFromFile() {
+  try {
+    const cacheData = fs.readFileSync(CACHE_FILE_PATH, 'utf-8');
+    cache = JSON.parse(cacheData);
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      // If the cache file does not exist, create an empty cache object
+      cache = {};
+      console.log('Cache file not found. Starting with an empty cache.');
+    } else {
+      console.warn('Error loading cache from file:', error.message);
+    }
+  }
+}
+
+// Load the cache from file on application startup
+loadCacheFromFile();
+
+// Function to save the cache to a file
+function saveCacheToFile() {
+  try {
+    fs.writeFileSync(CACHE_FILE_PATH, JSON.stringify(cache), 'utf-8');
+    console.log('Cache saved to file.');
+  } catch (error) {
+    console.error('Error saving cache to file:', error.message);
+  }
+}
+
+process.on('exit', () => {
+  // Save the cache to the file when the application exits
+  saveCacheToFile();
+});
+
+process.on('SIGINT', () => {
+  // Save the cache to the file when the application is terminated using SIGINT (Ctrl+C)
+  saveCacheToFile();
+  process.exit(0);
+});
 
 
 // These functions, 'fetchers', provide uniform inteface for simple access to the APIs
@@ -52,8 +96,17 @@ const fetchers = {
         sources: dataSources,
       };
 
+      // Generate a unique cache key based on the request data
+      const cacheKey = JSON.stringify(data);
+
+      // Check if the data is available in the cache
+      if (cache[cacheKey]) {
+        
+        return cache[cacheKey];
+      }
+
       try {
-        const response = await axios.post(apiUrl, data,{ headers: { 'User-Agent':'VLC-RPC V1.2' }});
+        const response = await axios.post(apiUrl, data, { headers: { 'User-Agent':'VLC-RPC V1.2' }});
         const responseText = response.data;
         const albumsData = responseText.split("\n").map((line) => {
           try {
@@ -80,15 +133,17 @@ const fetchers = {
           }
         });
 
-      
-        
         const selectedAlbumsInfo = Object.values(selectedAlbums).map((item) => item.album);
-        return {
+        const result = {
           fetchedFrom: "Spotify",
           albumInfo: selectedAlbumsInfo[0].releaseInfo, // Selecting the best matching album info
           artworkUrl: selectedAlbumsInfo[0].bigCoverUrl, // Use big cover URL for artwork
           joinUrl: selectedAlbumsInfo[0].releaseInfo.url,
         };
+
+        // Cache the result for future use
+        cache[cacheKey] = result;
+        return result;
       } catch (error) {
         console.error("An error occurred:", error);
         return null;
@@ -110,8 +165,17 @@ const fetchers = {
         sources: dataSources,
       };
 
+      // Generate a unique cache key based on the request data
+      const cacheKey = JSON.stringify(data);
+
+      // Check if the data is available in the cache
+      if (cache[cacheKey]) {
+        
+        return cache[cacheKey];
+      }
+
       try {
-        const response = await axios.post(apiUrl, data, { 'User-Agent':'VLC-RPC V1.2' });
+        const response = await axios.post(apiUrl, data, { headers: { 'User-Agent':'VLC-RPC V1.2' }});
         const responseText = response.data;
         const albumsData = responseText.split("\n").map((line) => {
           try {
@@ -139,12 +203,16 @@ const fetchers = {
         });
 
         const selectedAlbumsInfo = Object.values(selectedAlbums).map((item) => item.album);
-        return {
+        const result = {
           fetchedFrom: "Qobuz",
           albumInfo: selectedAlbumsInfo[0].releaseInfo, // Selecting the best matching album info
           artworkUrl: selectedAlbumsInfo[0].bigCoverUrl, // Use big cover URL for artwork
           joinUrl: selectedAlbumsInfo[0].releaseInfo.url,
         };
+
+        // Cache the result for future use
+        cache[cacheKey] = result;
+        return result;
       } catch (error) {
         console.error("An error occurred:", error);
         return null;
@@ -166,8 +234,17 @@ const fetchers = {
         sources: dataSources,
       };
 
+      // Generate a unique cache key based on the request data
+      const cacheKey = JSON.stringify(data);
+
+      // Check if the data is available in the cache
+      if (cache[cacheKey]) {
+  
+        return cache[cacheKey];
+      }
+
       try {
-        const response = await axios.post(apiUrl, data, { 'User-Agent':'VLC-RPC V1.2' });
+        const response = await axios.post(apiUrl, data, { headers: { 'User-Agent':'VLC-RPC V1.2' }});
         const responseText = response.data;
         const albumsData = responseText.split("\n").map((line) => {
           try {
@@ -195,12 +272,16 @@ const fetchers = {
         });
 
         const selectedAlbumsInfo = Object.values(selectedAlbums).map((item) => item.album);
-        return {
+        const result = {
           fetchedFrom: "Deezer",
           albumInfo: selectedAlbumsInfo[0].releaseInfo, // Selecting the best matching album info
           artworkUrl: selectedAlbumsInfo[0].bigCoverUrl, // Use big cover URL for artwork
           joinUrl: selectedAlbumsInfo[0].releaseInfo.url,
         };
+
+        // Cache the result for future use
+        cache[cacheKey] = result;
+        return result;
       } catch (error) {
         console.error("An error occurred:", error);
         return null;
@@ -347,6 +428,7 @@ module.exports = async (status) => {
   }
 
   if (config.debug === 'true') {
+    console.log('Cache loaded from file.');
     console.log(artwork);
     console.log(status.state);
     console.log(fetched);
