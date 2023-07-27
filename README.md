@@ -2,7 +2,7 @@
 ![GitHub](https://img.shields.io/github/license/GreenDiscord/vlc-rpc) ![Discord](https://img.shields.io/discord/1044078573142687814)
 
 Discord rich presence for VLC media player.
-This is a fork of [PigPogs](https://github.com/Pigpog/vlc-discord-rpc) VLC RPC, adding automatic album art.
+This is a fork of [PigPogs](https://github.com/Pigpog/vlc-discord-rpc) VLC RPC, adding automatic album art (by fetching from [Music hoarders](https://covers.musichoarders.xyz) cover site.).
 
 ![Example](./example.png)
 
@@ -31,10 +31,9 @@ Each option is explained in a comment above it.
 For advanced features, see [ADVANCED.md](./info/advanced.md).
 
 ## Limitations
-
+ - When using anything but itunes, a ratelimit will occure after some time.
  - When running multiple concurrent instances, only the first-opened instance of VLC will have a rich presence
  - This program does NOT allow you to stream media to others
 
 ## Known Bugs
- - If you get an error saying something along the lines of "Find 1 high severity vulnerability", run "npm audit fix --force".
  - If you find any bugs, please report them in [Issues](https://github.com/GreenDiscord/vlc-rpc/issues) or the [Discord](https://discord.gg/CHegxjdFCD)

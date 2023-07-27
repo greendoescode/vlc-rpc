@@ -53,7 +53,7 @@ const fetchers = {
       };
 
       try {
-        const response = await axios.post(apiUrl, data);
+        const response = await axios.post(apiUrl, data,{ headers: { 'User-Agent':'VLC-RPC V1.2' }});
         const responseText = response.data;
         const albumsData = responseText.split("\n").map((line) => {
           try {
@@ -111,7 +111,7 @@ const fetchers = {
       };
 
       try {
-        const response = await axios.post(apiUrl, data);
+        const response = await axios.post(apiUrl, data, { 'User-Agent':'VLC-RPC V1.2' });
         const responseText = response.data;
         const albumsData = responseText.split("\n").map((line) => {
           try {
@@ -167,7 +167,7 @@ const fetchers = {
       };
 
       try {
-        const response = await axios.post(apiUrl, data);
+        const response = await axios.post(apiUrl, data, { 'User-Agent':'VLC-RPC V1.2' });
         const responseText = response.data;
         const albumsData = responseText.split("\n").map((line) => {
           try {
