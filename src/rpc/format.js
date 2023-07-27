@@ -29,7 +29,7 @@ const fetchers = {
       });
       if (result.data.resultCount > 0 && result.data.results[0] !== undefined)
       {
-        returnValue = {
+        return {
           fetchedFrom: "Apple Music",
           artworkUrl: result.data.results[0].artworkUrl100,
           joinUrl: result.data.results[0].trackViewUrl
