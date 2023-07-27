@@ -2,7 +2,7 @@
 ![GitHub](https://img.shields.io/github/license/GreenDiscord/vlc-rpc) ![Discord](https://img.shields.io/discord/1044078573142687814)
 
 Discord rich presence for VLC media player.
-This is a fork of [PigPogs](https://github.com/Pigpog/vlc-discord-rpc) VLC RPC, adding automatic album art (by fetching from [Music Hoarders](https://covers.musichoarders.xyz) cover site.).
+This is a fork of [PigPogs](https://github.com/Pigpog/vlc-discord-rpc) VLC RPC, adding automatic album art (by fetching from [MH Covers](https://covers.musichoarders.xyz)).
 
 ![Example](./example.png)
 
