@@ -7,8 +7,8 @@ const fs = require('fs');
 const log = require('../helpers/lager.js');
 const config = require('../helpers/configLoader.js').getOrInit();
 const axios = require('axios');
-const albumArt = require('album-art');
 const yt = require("ytsr");
+const levenshtein = require("js-levenshtein");
 
 
 
@@ -25,7 +25,7 @@ const fetchers = {
         params: {
           media: "music",
           term: `${metadata.albumartist ? metadata.albumartist : metadata.artist} ${metadata.title}`,
-        }
+        }, headers: {"Accept-Encoding": "gzip,deflate,compress" }
       });
       if (result.data.resultCount > 0 && result.data.results[0] !== undefined)
       {
@@ -38,15 +38,172 @@ const fetchers = {
     }
   },
   "spotify": async (metadata) => {
-    if ((metadata.albumartist || metadata.artist) && metadata.album)
-    {
-      const result = await albumArt(metadata.albumartist ? metadata.albumartist : metadata.artist,
-                                    {album: metadata.album}).then((data) => data);
-      // TODO: how is failure indicated in the albumArt library?
-      return {
-        fetchedFrom: "Spotify",
-        artworkUrl: result,
-        joinUrl: undefined
+    if ((metadata.albumartist || metadata.artist) && metadata.album) {
+      const apiUrl = "https://covers.musichoarders.xyz/api/search";
+      const artistName = metadata.albumartist || metadata.artist;
+      const albumName = metadata.album;
+      const countryCode = "gb"; // gonna see if i can ip locate this or use the local system time to determine location
+      const dataSources = ["spotify"];
+
+      const data = {
+        artist: artistName,
+        album: albumName,
+        country: countryCode,
+        sources: dataSources,
+      };
+
+      try {
+        const response = await axios.post(apiUrl, data);
+        const responseText = response.data;
+        const albumsData = responseText.split("\n").map((line) => {
+          try {
+            if (line.trim().length > 0) {
+              return JSON.parse(line);
+            }
+            return null;
+          } catch (error) {
+            console.error("Error parsing JSON:", error);
+            return null;
+          }
+        });
+
+        const selectedAlbums = {};
+
+        albumsData.forEach((album) => {
+          if (album && album.releaseInfo && album.releaseInfo.artist) {
+            const { title, artist } = album.releaseInfo;
+            const albumNameScore = levenshtein(data.album.toLowerCase(), title.toLowerCase());
+
+            if (!selectedAlbums[album.source] || selectedAlbums[album.source].score > albumNameScore) {
+              selectedAlbums[album.source] = { album, score: albumNameScore };
+            }
+          }
+        });
+
+      
+        
+        const selectedAlbumsInfo = Object.values(selectedAlbums).map((item) => item.album);
+        return {
+          fetchedFrom: "Spotify",
+          albumInfo: selectedAlbumsInfo[0].releaseInfo, // Selecting the best matching album info
+          artworkUrl: selectedAlbumsInfo[0].bigCoverUrl, // Use big cover URL for artwork
+          joinUrl: selectedAlbumsInfo[0].releaseInfo.url,
+        };
+      } catch (error) {
+        console.error("An error occurred:", error);
+        return null;
+      }
+    }
+  },
+  "qobuz": async (metadata) => {
+    if ((metadata.albumartist || metadata.artist) && metadata.album) {
+      const apiUrl = "https://covers.musichoarders.xyz/api/search";
+      const artistName = metadata.albumartist || metadata.artist;
+      const albumName = metadata.album;
+      const countryCode = "gb"; // gonna see if i can ip locate this or use the local system time to determine location
+      const dataSources = ["qobuz"];
+
+      const data = {
+        artist: artistName,
+        album: albumName,
+        country: countryCode,
+        sources: dataSources,
+      };
+
+      try {
+        const response = await axios.post(apiUrl, data);
+        const responseText = response.data;
+        const albumsData = responseText.split("\n").map((line) => {
+          try {
+            if (line.trim().length > 0) {
+              return JSON.parse(line);
+            }
+            return null;
+          } catch (error) {
+            console.error("Error parsing JSON:", error);
+            return null;
+          }
+        });
+
+        const selectedAlbums = {};
+
+        albumsData.forEach((album) => {
+          if (album && album.releaseInfo && album.releaseInfo.artist) {
+            const { title, artist } = album.releaseInfo;
+            const albumNameScore = levenshtein(data.album.toLowerCase(), title.toLowerCase());
+
+            if (!selectedAlbums[album.source] || selectedAlbums[album.source].score > albumNameScore) {
+              selectedAlbums[album.source] = { album, score: albumNameScore };
+            }
+          }
+        });
+
+        const selectedAlbumsInfo = Object.values(selectedAlbums).map((item) => item.album);
+        return {
+          fetchedFrom: "Qobuz",
+          albumInfo: selectedAlbumsInfo[0].releaseInfo, // Selecting the best matching album info
+          artworkUrl: selectedAlbumsInfo[0].bigCoverUrl, // Use big cover URL for artwork
+          joinUrl: selectedAlbumsInfo[0].releaseInfo.url,
+        };
+      } catch (error) {
+        console.error("An error occurred:", error);
+        return null;
+      }
+    }
+  },
+  "deezer": async (metadata) => {
+    if ((metadata.albumartist || metadata.artist) && metadata.album) {
+      const apiUrl = "https://covers.musichoarders.xyz/api/search";
+      const artistName = metadata.albumartist || metadata.artist;
+      const albumName = metadata.album;
+      const countryCode = "gb"; // gonna see if i can ip locate this or use the local system time to determine location
+      const dataSources = ["deezer"];
+
+      const data = {
+        artist: artistName,
+        album: albumName,
+        country: countryCode,
+        sources: dataSources,
+      };
+
+      try {
+        const response = await axios.post(apiUrl, data);
+        const responseText = response.data;
+        const albumsData = responseText.split("\n").map((line) => {
+          try {
+            if (line.trim().length > 0) {
+              return JSON.parse(line);
+            }
+            return null;
+          } catch (error) {
+            console.error("Error parsing JSON:", error);
+            return null;
+          }
+        });
+
+        const selectedAlbums = {};
+
+        albumsData.forEach((album) => {
+          if (album && album.releaseInfo && album.releaseInfo.artist) {
+            const { title, artist } = album.releaseInfo;
+            const albumNameScore = levenshtein(data.album.toLowerCase(), title.toLowerCase());
+
+            if (!selectedAlbums[album.source] || selectedAlbums[album.source].score > albumNameScore) {
+              selectedAlbums[album.source] = { album, score: albumNameScore };
+            }
+          }
+        });
+
+        const selectedAlbumsInfo = Object.values(selectedAlbums).map((item) => item.album);
+        return {
+          fetchedFrom: "Deezer",
+          albumInfo: selectedAlbumsInfo[0].releaseInfo, // Selecting the best matching album info
+          artworkUrl: selectedAlbumsInfo[0].bigCoverUrl, // Use big cover URL for artwork
+          joinUrl: selectedAlbumsInfo[0].releaseInfo.url,
+        };
+      } catch (error) {
+        console.error("An error occurred:", error);
+        return null;
       }
     }
   },
