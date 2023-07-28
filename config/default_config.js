@@ -30,10 +30,10 @@ module.exports = {
     // How frequently in milliseconds to check for updates
     updateInterval: 1000,
 
-    // Change where to fetch the album artwork (spotify, apple, qobuz and deezer are currently supported.)
+    // Preferred provider of the album artwork ("spotify", "qobuz", "deezer" or "apple")
     whereToFetchOnline: "spotify",
 
-    // Change the provider for the rpc button (recommended to be same as where you fetch the album art.)
+    // Preferred provider of the rpc button ("spotify", "qobuz", "deezer", "apple" or "youtube")
     changeButtonProvider: "apple",
 
     // When playback is paused, wait this many milliseconds 
