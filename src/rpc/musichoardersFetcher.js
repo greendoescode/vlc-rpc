@@ -4,6 +4,10 @@ const fs = require('fs');
 const levenshtein = require("js-levenshtein");
 const path = require('path');
 
+/**
+ * Caching fetcher for [MusicHoarders](https://covers.musichoarders.xyz/)
+ *   Caching may be either in memory only, or to a file in the `cache/` directory.
+ */
 class MusicHoardersFetcher
 {
   static #services = {
@@ -13,7 +17,7 @@ class MusicHoardersFetcher
   };
   static #apiUrl = "https://covers.musichoarders.xyz/api/search";
 
-  /** @type {!string}*/
+  /** @type {!string} */
   #cacheFilePath = path.join(__dirname, '..', '..', 'cache', 'MusicHoardersCache.json');
 
   /** @type {boolean} */
@@ -113,11 +117,12 @@ class MusicHoardersFetcher
           let bestResults = {};
           albumsData.forEach((album) => {
             if (album && album.releaseInfo && album.releaseInfo.artist) {
-              const albumNameScore =
-                levenshtein(metadata.album.toLowerCase(), album.releaseInfo.title.toLowerCase());
+              const levenshteinScore =
+                levenshtein(album.releaseInfo.title.toLowerCase(), data.album.toLowerCase())
+                + levenshtein(album.releaseInfo.artist.toLowerCase(), data.artist.toLowerCase());
 
-              if (!bestResults[album.source] || bestResults[album.source].score > albumNameScore) {
-                bestResults[album.source] = { album, score: albumNameScore };
+              if (!bestResults[album.source] || levenshteinScore < bestResults[album.source].score) {
+                bestResults[album.source] = { album, score: levenshteinScore };
               }
             }
           });
@@ -126,7 +131,7 @@ class MusicHoardersFetcher
           {
             bestResults[serviceKey] = {
               fetchedFrom: MusicHoardersFetcher.#services[serviceKey],
-              artworkUrl: bestResults[serviceKey].album.bigCoverUrl,
+              artworkUrl: bestResults[serviceKey].album.smallCoverUrl,
               joinUrl: bestResults[serviceKey].album.releaseInfo.url,
             };
           };
