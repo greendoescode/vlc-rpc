@@ -36,6 +36,9 @@ module.exports = {
     // Preferred provider of the rpc button ("spotify", "qobuz", "deezer", "apple" or "youtube")
     changeButtonProvider: "apple",
 
+    // Whether to use persistent cache for MusicHoarders queries
+    persistentMusicHoardersCache: false,
+
     // When playback is paused, wait this many milliseconds 
     // before removing your rich presence
     sleepTime: 30000,

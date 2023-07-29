@@ -10,7 +10,7 @@ const axios = require('axios');
 const yt = require("ytsr");
 const path = require("path")
 
-let musichoardersFetcher = new (require('./musichoardersFetcher.js'))();
+let musichoardersFetcher = new (require('./musichoardersFetcher.js'))(config.rpc.persistentMusicHoardersCache);
 
 // These functions, 'fetchers', provide uniform inteface for simple access to the APIs
 // They take VLC metadata as the argument and on success return object containing

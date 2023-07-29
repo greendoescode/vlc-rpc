@@ -1,6 +1,8 @@
 
 const axios = require('axios');
+const fs = require('fs');
 const levenshtein = require("js-levenshtein");
+const path = require('path');
 
 class MusicHoardersFetcher
 {
@@ -11,10 +13,63 @@ class MusicHoardersFetcher
   };
   static #apiUrl = "https://covers.musichoarders.xyz/api/search";
 
-  #lastMetadata;
-  #lastResults = {};
+  /** @type {!string}*/
+  #cacheFilePath = path.join(__dirname, '..', '..', 'cache', 'MusicHoardersCache.json');
 
-  constructor(){}
+  /** @type {boolean} */
+  #usePersistentCache;
+  /** @type {!Object} #knownResults [metadataJSON][service] = {{fetchedFrom: string, artworkUrl: string, joinUrl: string}} */
+  #knownResults = {};
+
+  /**
+   * @param {boolean} useFileBasedCache
+   */
+  constructor(usePersistentCache){
+    console.log(usePersistentCache);
+    this.#usePersistentCache = usePersistentCache;
+    if (usePersistentCache)
+    {
+      // Load cache from cache file
+      try {
+        const cacheData = fs.readFileSync(this.#cacheFilePath, 'utf-8');
+        this.#knownResults = JSON.parse(cacheData);
+      }
+      catch (error)
+      {
+        if (error.code === 'ENOENT')
+        {
+          // If the cache file does not exist, create an empty cache object
+          console.log('Cache file not found. Starting with an empty cache.');
+        }
+        else
+        {
+          console.warn('Error loading cache from file:', error.message);
+        }
+      }
+
+      process.on('exit', () => {
+        // Save the cache to the file when the application exits
+        this.#saveCacheToFile();
+      });
+
+      process.on('SIGINT', () => {
+        // Save the cache to the file when the application is terminated using SIGINT (Ctrl+C)
+        this.#saveCacheToFile();
+      });
+    }
+  }
+
+  #saveCacheToFile()
+  {
+    try {
+      fs.writeFileSync(this.#cacheFilePath, JSON.stringify(this.#knownResults), 'utf-8');
+      console.log('Cache saved to file.');
+    }
+    catch (error)
+    {
+      console.error('Error saving cache to file:', error.message);
+    }
+  }
 
   /**
    * Fetch artwork and join URLs if not cached, otherwise return cached
@@ -26,9 +81,10 @@ class MusicHoardersFetcher
   {
     if ((metadata.albumartist || metadata.artist) && metadata.album) {
       let metadataJSON = JSON.stringify(metadata);
-      if (metadataJSON === this.#lastMetadata)
+      if (metadataJSON in this.#knownResults
+          && service in this.#knownResults[metadataJSON])
       { // Use cached results if possible
-        return this.#lastResults[service];
+        return this.#knownResults[metadataJSON][service];
       }
       else
       { // Otherwise make a new request
@@ -53,30 +109,33 @@ class MusicHoardersFetcher
           }
         });
 
-        let bestResults = {};
-        albumsData.forEach((album) => {
-          if (album && album.releaseInfo && album.releaseInfo.artist) {
-            const albumNameScore =
-              levenshtein(metadata.album.toLowerCase(), album.releaseInfo.title.toLowerCase());
-
-            if (!bestResults[album.source] || bestResults[album.source].score > albumNameScore) {
-              bestResults[album.source] = { album, score: albumNameScore };
-            }
-          }
-        });
-
-        for (let serviceKey in bestResults)
+        if (albumsData.length > 0)
         {
-          this.#lastResults[serviceKey] = {
-            fetchedFrom: MusicHoardersFetcher.#services[serviceKey],
-            artworkUrl: bestResults[serviceKey].album.bigCoverUrl,
-            joinUrl: bestResults[serviceKey].album.releaseInfo.url,
-          };
-        };
-        //console.log(this.#lastResults);
+          let bestResults = {};
+          albumsData.forEach((album) => {
+            if (album && album.releaseInfo && album.releaseInfo.artist) {
+              const albumNameScore =
+                levenshtein(metadata.album.toLowerCase(), album.releaseInfo.title.toLowerCase());
 
-        this.#lastMetadata = metadataJSON;
-        return this.#lastResults[service];
+              if (!bestResults[album.source] || bestResults[album.source].score > albumNameScore) {
+                bestResults[album.source] = { album, score: albumNameScore };
+              }
+            }
+          });
+
+          for (let serviceKey in bestResults)
+          {
+            bestResults[serviceKey] = {
+              fetchedFrom: MusicHoardersFetcher.#services[serviceKey],
+              artworkUrl: bestResults[serviceKey].album.bigCoverUrl,
+              joinUrl: bestResults[serviceKey].album.releaseInfo.url,
+            };
+          };
+          //console.log(this.#lastResults);
+
+          this.#knownResults[metadataJSON] = bestResults;
+          return this.#knownResults[metadataJSON][service];
+        }
       }
     }
   }
