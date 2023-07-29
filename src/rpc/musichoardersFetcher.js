@@ -25,7 +25,6 @@ class MusicHoardersFetcher
    * @param {boolean} useFileBasedCache
    */
   constructor(usePersistentCache){
-    console.log(usePersistentCache);
     this.#usePersistentCache = usePersistentCache;
     if (usePersistentCache)
     {
