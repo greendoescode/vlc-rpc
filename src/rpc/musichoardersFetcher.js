@@ -124,29 +124,30 @@ class MusicHoardersFetcher
             console.error("Error parsing JSON:", error);
             return null;
           }
-        });
+        }).filter(e => e); // Filter out invalids
 
-        if (albumsData.length > 0)
+        let bestResults = {};
+        for (let album of albumsData)
         {
-          let bestResults = {};
-          albumsData.forEach((album) => {
-            if (album && album.releaseInfo && album.releaseInfo.artist)
-            {
-              const levenshteinScore =
-                levenshtein(album.releaseInfo.title.toLowerCase(), data.album.toLowerCase())
-                + levenshtein(album.releaseInfo.artist.toLowerCase(), data.artist.toLowerCase());
+          if (album.releaseInfo && album.releaseInfo.artist)
+          {
+            const levenshteinScore =
+              levenshtein(album.releaseInfo.title.toLowerCase(), data.album.toLowerCase())
+              + levenshtein(album.releaseInfo.artist.toLowerCase(), data.artist.toLowerCase());
 
-              if (!bestResults[album.source] || levenshteinScore < bestResults[album.source].score)
-              { // If better fit than earlier covers from the service, set as best for service
-                bestResults[album.source] = { album, score: levenshteinScore };
-                if (!bestResults["musichoarders"] || levenshteinScore < bestResults["musichoarders"].score)
-                { // If better fit than earlier covers overall, set as best for "musichoarders"
-                  bestResults["musichoarders"] = { album, score: levenshteinScore };
-                }
+            if (!bestResults[album.source] || levenshteinScore < bestResults[album.source].score)
+            { // If better fit than earlier covers from the service, set as best for service
+              bestResults[album.source] = { album, score: levenshteinScore };
+              if (!bestResults["musichoarders"] || levenshteinScore < bestResults["musichoarders"].score)
+              { // If better fit than earlier covers overall, set as best for "musichoarders"
+                bestResults["musichoarders"] = { album, score: levenshteinScore };
               }
             }
-          });
+          }
+        }
 
+        if (Object.keys(bestResults).length > 0)
+        {
           for (let serviceKey in bestResults)
           {
             bestResults[serviceKey] = {
