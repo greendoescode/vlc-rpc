@@ -23,7 +23,7 @@ jobs:
         id: get_version
         run: |
           VERSION=$(node -p "require('./package.json').version" | tr -d "[:punct:]")
-          echo "VERSION=$VERSION" >> .env.production
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "Version from package.json: $VERSION"
 
       - name: Create release zip
@@ -48,7 +48,7 @@ jobs:
         id: upload_artifact
         uses: actions/upload-artifact@v2
         with:
-          name: "release-$VERSION"
+          name: "release"
           path: "release-$VERSION.zip"
 
       - name: Get the uploaded ZIP artifact ID
@@ -57,8 +57,9 @@ jobs:
 
       - name: Associate ZIP artifact with the GitHub Release
         run: |
+          ASSET_NAME="release-$VERSION.zip"
           curl -X PATCH \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d "{\"name\":\"release-$VERSION.zip\"}" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/assets/$ENV{ARTIFACT_ID}?name=release-$VERSION.zip"
+            -d "{\"name\":\"$ASSET_NAME\"}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/assets/$ENV{ARTIFACT_ID}?name=$ASSET_NAME"
