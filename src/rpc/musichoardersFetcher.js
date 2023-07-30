@@ -62,6 +62,9 @@ class MusicHoardersFetcher
     }
   }
 
+  /**
+   * Save content in #knownResults to the cache file
+   */
   #saveCacheToFile()
   {
     try {
@@ -82,8 +85,15 @@ class MusicHoardersFetcher
    */
   async fetch(service, metadata)
   {
-    if ((metadata.albumartist || metadata.artist) && metadata.album) {
-      let metadataJSON = JSON.stringify(metadata);
+    if ((metadata.ALBUMARTIST || metadata.artist) && metadata.album)
+    {
+      // Create key that can be reasonably expected to be same for all songs in an album
+      let metadataJSON = JSON.stringify({
+        artist: metadata.ALBUMARTIST || metadata.artist,
+        album: metadata.album,
+        date: metadata.date,
+        publisher: metadata.publisher,
+      });
       if (metadataJSON in this.#knownResults
           && service in this.#knownResults[metadataJSON])
       { // Use cached results if possible
@@ -92,7 +102,7 @@ class MusicHoardersFetcher
       else
       { // Otherwise make a new request
         const data = {
-          artist: metadata.albumartist || metadata.artist,
+          artist: metadata.ALBUMARTIST || metadata.artist,
           album: metadata.album,
           country: "gb", // this can be static
           sources: Object.keys(MusicHoardersFetcher.#services)
