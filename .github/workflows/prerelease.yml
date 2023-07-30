@@ -52,7 +52,7 @@ jobs:
 
       - name: Get the uploaded ZIP artifact ID
         id: get_zip_artifact_id
-        run: echo "ARTIFACT_ID=$(jq -r '.upload_artifact.artifact_id' $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
+        run: echo "ARTIFACT_ID=$(jq -r '.outputs.upload_artifact.artifact_id' $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
 
       - name: Associate ZIP artifact with the GitHub Release
         run: |
