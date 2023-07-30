@@ -16,12 +16,15 @@ jobs:
         with:
           node-version: '16.x'
 
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
       - name: Checkout code
         uses: actions/checkout@v2
 
       - name: Get latest version from package.json
         id: get_version
-        run: echo "VERSION=$(node -p \"require('./package.json').version\" | tr -d \"[:punct:]\")" >> $GITHUB_ENV
+        run: echo "VERSION=$(jq -r .version package.json | tr -d '[:punct:]')" >> $GITHUB_ENV
 
       - name: Create release zip
         run: zip -r "release-$VERSION.zip" .
