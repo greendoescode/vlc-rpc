@@ -37,7 +37,7 @@ jobs:
         id: create_github_release
         uses: actions/create-release@v1
         with:
-          tag_name: "pre-release-$VERSION-$(echo $GITHUB_SHA | head -c 7)"
+          tag_name: "v$VERSION-$(echo $GITHUB_SHA | head -c 7)"
           release_name: "Pre-release $VERSION"
           draft: false
           prerelease: true
