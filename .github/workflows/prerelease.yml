@@ -30,7 +30,7 @@ jobs:
         id: create_release
         run: |
           mkdir -p release
-          ZIP_FILENAME="release/release-$VERSION-$(echo $GITHUB_SHA | head -c 7).zip"
+          ZIP_FILENAME="release-$VERSION-$(echo $GITHUB_SHA | head -c 7).zip"
           zip -r "$ZIP_FILENAME" .
 
       - name: Create GitHub Release
@@ -49,7 +49,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: "release-$VERSION-$(echo $GITHUB_SHA | head -c 7)"
-          path: "release/release-$VERSION-$(echo $GITHUB_SHA | head -c 7).zip"
+          path: "release-$VERSION-$(echo $GITHUB_SHA | head -c 7).zip"
 
       - name: Get the uploaded ZIP artifact ID
         id: get_zip_artifact_id
