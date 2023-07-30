@@ -31,6 +31,9 @@ jobs:
       - name: Create release zip
         run: zip -r "release-${{ steps.get-version.outputs.version }}.zip" .
 
+      - name: Set Artifact Path
+        run: echo "ARTIFACT_PATH=release-${{ steps.get-version.outputs.version }}.zip" >> $GITHUB_ENV
+
       - name: Create GitHub Release
         id: create_github_release
         uses: actions/create-release@v1
@@ -46,4 +49,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: "release"
-          path: "release-${{ steps.get-version.outputs.version }}.zip"
+          path: "${{ env.ARTIFACT_PATH }}"
