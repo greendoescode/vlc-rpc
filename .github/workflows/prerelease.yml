@@ -48,7 +48,7 @@ jobs:
         id: upload_artifact
         uses: actions/upload-artifact@v2
         with:
-          name: "release-$VERSION"
+          name: "release"
           path: "release-$VERSION.zip"
 
       - name: Get the uploaded ZIP artifact ID
