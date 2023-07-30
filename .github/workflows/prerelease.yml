@@ -26,12 +26,13 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "Version from package.json: $VERSION"
 
+      - name: Install zip utility
+        run: sudo apt-get install -y zip
+
       - name: Create release zip
-        id: create_release
         run: |
           mkdir -p release
-          ZIP_FILENAME="release-$VERSION.zip"
-          zip -r "$ZIP_FILENAME" .
+          zip -r "release/release-$VERSION.zip" .
 
       - name: Create GitHub Release
         id: create_github_release
@@ -45,21 +46,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload release artifact
-        id: upload_artifact
         uses: actions/upload-artifact@v2
         with:
           name: "release"
-          path: "release-$VERSION.zip"
-
-      - name: Get the uploaded ZIP artifact ID
-        id: get_zip_artifact_id
-        run: echo "ARTIFACT_ID=$(jq -r '.outputs.upload_artifact.artifact_id' $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
-
-      - name: Associate ZIP artifact with the GitHub Release
-        run: |
-          ASSET_NAME="release-$VERSION.zip"
-          curl -X PATCH \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d "{\"name\":\"$ASSET_NAME\"}" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/assets/$ENV{ARTIFACT_ID}?name=$ASSET_NAME"
+          path: "release/release-$VERSION.zip"
