@@ -29,7 +29,7 @@ jobs:
           path: .
 
       - name: Create release zip
-        run: zip -r "V${{ steps.get-version.outputs.version }}-prerelease.zip" .
+        run: zip -r "V${{ steps.get-version.outputs.version }}-prerelease.zip" . -x "*.git*" ".github*" ".gitignore"
 
       - name: Check if release exists
         id: check_release
@@ -50,7 +50,7 @@ jobs:
         id: create_or_update_github_release
         uses: actions/create-release@v1
         with:
-          tag_name: "v${{ steps.get-version.outputs.version }}"
+          tag_name: "V${{ steps.get-version.outputs.version }}"
           release_name: "Pre-release ${{ steps.get-version.outputs.version }}"
           draft: false
           prerelease: true
