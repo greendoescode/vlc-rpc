@@ -2,14 +2,14 @@
 const fs = require('fs');
 const path = require('path');
 
-module.exports.getOrInit = () => {
+module.exports.getOrInit = (configName) => {
 
-  let configPath = path.join(__dirname, '..', '..', 'config', 'config.js');
+  let configPath = path.join(__dirname, '..', '..', 'config', configName);
 
   if (fs.existsSync(configPath) === false)
   {
     fs.writeFileSync(configPath,
-          fs.readFileSync(path.join(__dirname, '..', '..', 'config', 'default_config.js')));
+          fs.readFileSync(path.join(__dirname, 'configs', 'default_' + configName)));
   }
   return require(configPath);
 

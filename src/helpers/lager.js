@@ -3,7 +3,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const VLC = require('vlc.js');
-const { vlc } = require('./configLoader.js').getOrInit();
+const { vlc } = require('./configLoader.js').getOrInit('config.js');
 
 const client = new VLC.VLCClient(vlc);
 const destination = path.join(__dirname, '/../../logs/');

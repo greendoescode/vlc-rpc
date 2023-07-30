@@ -4,7 +4,7 @@
  */
 const VLC = require('vlc.js');
 const log = require('../helpers/lager.js');
-const config = require('../helpers/configLoader.js').getOrInit();
+const config = require('../helpers/configLoader.js').getOrInit('config.js');
 
 // VLC server (8080) detection status
 var detectVlc = true;

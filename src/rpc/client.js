@@ -3,7 +3,7 @@
  */
 
 const RPC = require('discord-rpc');
-const config = require('../helpers/configLoader.js').getOrInit();
+const config = require('../helpers/configLoader.js').getOrInit('config.js');
 const diff = require('../vlc/diff.js');
 const format = require('./format.js');
 const log = require('../helpers/lager.js');
