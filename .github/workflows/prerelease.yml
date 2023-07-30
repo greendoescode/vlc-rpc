@@ -29,7 +29,7 @@ jobs:
           path: .
 
       - name: Create release zip
-        run: zip -r "release-${{ steps.get-version.outputs.version }}.zip" .
+        run: zip -r "V${{ steps.get-version.outputs.version }}-prerelease.zip" .
 
       - name: Set Artifact Path
         run: echo "ARTIFACT_PATH=release-${{ steps.get-version.outputs.version }}.zip" >> $GITHUB_ENV
