@@ -69,8 +69,8 @@ jobs:
       - name: Upload release artifact
         uses: actions/upload-artifact@v2
         with:
-          name: "release"
-          path: "release-${{ steps.get-version.outputs.version }}.zip"
+          name: "V${{ steps.get-version.outputs.version }}-prerelease"
+          path: "V${{ steps.get-version.outputs.version }}-prerelease.zip"
 
       - name: Attach artifact to release
         if: env.RELEASE_EXISTS == 'true'
