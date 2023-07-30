@@ -18,13 +18,13 @@ let musichoardersFetcher = new (require('./musichoardersFetcher.js'))(config.rpc
 // In order to be as simple as possible, the functions may throw exceptions or not return anything.
 //   They are expected to be called through the `fetchSafely()` wrapper.
 const fetchers = {
-  "apple": async (metadata) => {
-    if ((metadata.albumartist || metadata.artist) && metadata.title)
+  "apple": async (metadata) => { // Doesn't rely on MusicHoarders, keep it that way, just in case
+    if ((metadata.ALBUMARTIST || metadata.artist) && metadata.title)
     {
       const result = await axios.get("https://itunes.apple.com/search", {
         params: {
           media: "music",
-          term: `${metadata.albumartist || metadata.artist} ${metadata.title}`,
+          term: `${metadata.ALBUMARTIST || metadata.artist} ${metadata.title}`,
         },
         headers: {"Accept-Encoding": "gzip,deflate,compress" }
       });
@@ -38,17 +38,29 @@ const fetchers = {
       }
     }
   },
-  "spotify": async (metadata) => {
-    return musichoardersFetcher.fetch("spotify", metadata);
-  },
-  "qobuz": async (metadata) => {
-    return musichoardersFetcher.fetch("qobuz", metadata);
+  "bandcamp": async (metadata) => {
+    return musichoardersFetcher.fetch("bandcamp", metadata);
   },
   "deezer": async (metadata) => {
     return musichoardersFetcher.fetch("deezer", metadata);
   },
+  "musichoarders": async (metadata) => {
+    return musichoardersFetcher.fetch("musichoarders", metadata);
+  },
+  "qobuz": async (metadata) => {
+    return musichoardersFetcher.fetch("qobuz", metadata);
+  },
+  "spotify": async (metadata) => {
+    return musichoardersFetcher.fetch("spotify", metadata);
+  },
+  "soundcloud": async (metadata) => {
+    return musichoardersFetcher.fetch("soundcloud", metadata);
+  },
+  "tidal": async (metadata) => {
+    return musichoardersFetcher.fetch("tidal", metadata);
+  },
   "youtube": async (metadata) => {
-    const result = await yt(`${metadata.albumartist || metadata.artist || ""} ${metadata.title || metadata.filename}`.trim(), { limit: 1 });
+    const result = await yt(`${metadata.ALBUMARTIST || metadata.artist || ""} ${metadata.title || metadata.filename}`.trim(), { limit: 1 });
     if (result.items.length > 0)
     {
       return {
@@ -197,8 +209,8 @@ module.exports = async (status) => {
 
   // Find correct artist name to display,
   //  then append one character since Discord state must be at least two characters long
-  let display_artist = (meta.albumartist
-                        ? meta.albumartist + " "
+  let display_artist = (meta.ALBUMARTIST
+                        ? meta.ALBUMARTIST + " "
                         : (meta.artist
                            ? meta.artist + " "
                            : undefined));

@@ -30,11 +30,13 @@ module.exports = {
     // How frequently in milliseconds to check for updates
     updateInterval: 1000,
 
-    // Preferred provider of the album artwork ("spotify", "qobuz", "deezer" or "apple")
-    whereToFetchOnline: "spotify",
+    // Preferred provider of the album artwork
+    // Supported: "apple", "bandcamp", "deezer", "qobuz", "spotify", "soundcloud" and "tidal"
+    //   Use "musichoarders" to use closest fit from all services above
+    whereToFetchOnline: "musichoarders",
 
-    // Preferred provider of the rpc button ("spotify", "qobuz", "deezer", "apple" or "youtube")
-    changeButtonProvider: "apple",
+    // Preferred provider of the rpc button (as above + "youtube")
+    changeButtonProvider: "spotify",
 
     // Whether to use persistent cache for MusicHoarders queries
     persistentMusicHoardersCache: false,

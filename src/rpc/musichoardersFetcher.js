@@ -11,9 +11,13 @@ const path = require('path');
 class MusicHoardersFetcher
 {
   static #services = {
-    "spotify": "Spotify",
+    "applemusic": "Apple Music",
+    "bandcamp": "Bandcamp",
+    "deezer": "Deezer",
     "qobuz": "Qobuz",
-    "deezer": "Deezer"
+    "spotify": "Spotify",
+    "soundcloud": "SoundCloud",
+    "tidal": "Tidal",
   };
   static #apiUrl = "https://covers.musichoarders.xyz/api/search";
 
@@ -126,13 +130,19 @@ class MusicHoardersFetcher
         {
           let bestResults = {};
           albumsData.forEach((album) => {
-            if (album && album.releaseInfo && album.releaseInfo.artist) {
+            if (album && album.releaseInfo && album.releaseInfo.artist)
+            {
               const levenshteinScore =
                 levenshtein(album.releaseInfo.title.toLowerCase(), data.album.toLowerCase())
                 + levenshtein(album.releaseInfo.artist.toLowerCase(), data.artist.toLowerCase());
 
-              if (!bestResults[album.source] || levenshteinScore < bestResults[album.source].score) {
+              if (!bestResults[album.source] || levenshteinScore < bestResults[album.source].score)
+              { // If better fit than earlier covers from the service, set as best for service
                 bestResults[album.source] = { album, score: levenshteinScore };
+                if (!bestResults["musichoarders"] || levenshteinScore < bestResults["musichoarders"].score)
+                { // If better fit than earlier covers overall, set as best for "musichoarders"
+                  bestResults["musichoarders"] = { album, score: levenshteinScore };
+                }
               }
             }
           });
@@ -140,7 +150,7 @@ class MusicHoardersFetcher
           for (let serviceKey in bestResults)
           {
             bestResults[serviceKey] = {
-              fetchedFrom: MusicHoardersFetcher.#services[serviceKey],
+              fetchedFrom: MusicHoardersFetcher.#services[bestResults[serviceKey].album.source],
               artworkUrl: bestResults[serviceKey].album.smallCoverUrl,
               joinUrl: bestResults[serviceKey].album.releaseInfo.url,
             };
