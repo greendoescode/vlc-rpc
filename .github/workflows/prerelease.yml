@@ -51,8 +51,7 @@ jobs:
 
       - name: Get the uploaded ZIP artifact ID
         id: get_zip_artifact_id
-        run: echo ::set-env name=ARTIFACT_ID::${{ steps.create_github_release.outputs.upload_url }}
-        shell: bash
+        run: echo "ARTIFACT_ID=${{ steps.create_github_release.outputs.upload_url }}" >> $GITHUB_ENV
 
       - name: Associate ZIP artifact with the GitHub Release
         run: |
