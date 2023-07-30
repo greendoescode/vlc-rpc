@@ -76,4 +76,4 @@ jobs:
         if: env.RELEASE_EXISTS == 'true'
         run: |
           set -e
-          curl -X POST -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/zip" --data-binary @release-${{ steps.get-version.outputs.version }}.zip "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }}/assets?name=release-${{ steps.get-version.outputs.version }}.zip"
+          curl -X POST -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/zip" --data-binary @V${{ steps.get-version.outputs.version }}-prerelease.zip "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }}/assets?name=V${{ steps.get-version.outputs.version }}-prerelease.zip"
