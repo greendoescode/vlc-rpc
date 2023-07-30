@@ -33,8 +33,22 @@ jobs:
 
       - name: Set Artifact Path
         run: echo "ARTIFACT_PATH=release-${{ steps.get-version.outputs.version }}.zip" >> $GITHUB_ENV
+      
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          set -e
+          if git rev-parse "v${{ steps.get-version.outputs.version }}" >/dev/null 2>&1; then
+            echo "Tag v${{ steps.get-version.outputs.version }}" exists.
+            echo "TAG_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "Tag v${{ steps.get-version.outputs.version }}" does not exist.
+            echo "TAG_EXISTS=false" >> $GITHUB_ENV
+          fi
+        shell: bash
 
       - name: Create GitHub Release
+        if: env.TAG_EXISTS != 'true'
         id: create_github_release
         uses: actions/create-release@v1
         with:
