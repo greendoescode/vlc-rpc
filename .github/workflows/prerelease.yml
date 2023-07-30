@@ -48,7 +48,7 @@ jobs:
         id: upload_artifact
         uses: actions/upload-artifact@v2
         with:
-          name: "release"
+          name: "release-$VERSION"
           path: "release-$VERSION.zip"
 
       - name: Get the uploaded ZIP artifact ID
@@ -61,4 +61,4 @@ jobs:
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d "{\"name\":\"release-$VERSION.zip\"}" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/assets/${{ env.ARTIFACT_ID }}?name=release-$VERSION.zip"
+            "https://api.github.com/repos/${{ github.repository }}/releases/assets/$ENV{ARTIFACT_ID}?name=release-$VERSION.zip"
