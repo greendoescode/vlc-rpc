@@ -9,52 +9,8 @@ const config = require('../helpers/configLoader.js').getOrInit();
 const axios = require('axios');
 const yt = require("ytsr");
 const path = require("path")
-const levenshtein = require("js-levenshtein");
 
-const CACHE_FILE_PATH = './cache.json'
-
-// Load cache from file during application startup
-let cache = {};
-
-function loadCacheFromFile() {
-  try {
-    const cacheData = fs.readFileSync(CACHE_FILE_PATH, 'utf-8');
-    cache = JSON.parse(cacheData);
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      // If the cache file does not exist, create an empty cache object
-      cache = {};
-      console.log('Cache file not found. Starting with an empty cache.');
-    } else {
-      console.warn('Error loading cache from file:', error.message);
-    }
-  }
-}
-
-// Load the cache from file on application startup
-loadCacheFromFile();
-
-// Function to save the cache to a file
-function saveCacheToFile() {
-  try {
-    fs.writeFileSync(CACHE_FILE_PATH, JSON.stringify(cache), 'utf-8');
-    console.log('Cache saved to file.');
-  } catch (error) {
-    console.error('Error saving cache to file:', error.message);
-  }
-}
-
-process.on('exit', () => {
-  // Save the cache to the file when the application exits
-  saveCacheToFile();
-});
-
-process.on('SIGINT', () => {
-  // Save the cache to the file when the application is terminated using SIGINT (Ctrl+C)
-  saveCacheToFile();
-  process.exit(0);
-});
-
+let musichoardersFetcher = new (require('./musichoardersFetcher.js'))(config.rpc.persistentMusicHoardersCache);
 
 // These functions, 'fetchers', provide uniform inteface for simple access to the APIs
 // They take VLC metadata as the argument and on success return object containing
@@ -62,14 +18,15 @@ process.on('SIGINT', () => {
 // In order to be as simple as possible, the functions may throw exceptions or not return anything.
 //   They are expected to be called through the `fetchSafely()` wrapper.
 const fetchers = {
-  "apple": async (metadata) => {
-    if ((metadata.albumartist || metadata.artist) && metadata.title)
+  "apple": async (metadata) => { // Doesn't rely on MusicHoarders, keep it that way, just in case
+    if ((metadata.ALBUMARTIST || metadata.artist) && metadata.title)
     {
       const result = await axios.get("https://itunes.apple.com/search", {
         params: {
           media: "music",
-          term: `${metadata.albumartist ? metadata.albumartist : metadata.artist} ${metadata.title}`,
-        }, headers: {"Accept-Encoding": "gzip,deflate,compress" }
+          term: `${metadata.ALBUMARTIST || metadata.artist} ${metadata.title}`,
+        },
+        headers: {"Accept-Encoding": "gzip,deflate,compress" }
       });
       if (result.data.resultCount > 0 && result.data.results[0] !== undefined)
       {
@@ -81,215 +38,29 @@ const fetchers = {
       }
     }
   },
-  "spotify": async (metadata) => {
-    if ((metadata.albumartist || metadata.artist) && metadata.album) {
-      const apiUrl = "https://covers.musichoarders.xyz/api/search";
-      const artistName = metadata.albumartist || metadata.artist;
-      const albumName = metadata.album;
-      const countryCode = "gb"; // gonna see if i can ip locate this or use the local system time to determine location
-      const dataSources = ["spotify"];
-
-      const data = {
-        artist: artistName,
-        album: albumName,
-        country: countryCode,
-        sources: dataSources,
-      };
-
-      // Generate a unique cache key based on the request data
-      const cacheKey = JSON.stringify(data);
-
-      // Check if the data is available in the cache
-      if (cache[cacheKey]) {
-        
-        return cache[cacheKey];
-      }
-
-      try {
-        const response = await axios.post(apiUrl, data, { headers: { 'User-Agent':'VLC-RPC V1.2' }});
-        const responseText = response.data;
-        const albumsData = responseText.split("\n").map((line) => {
-          try {
-            if (line.trim().length > 0) {
-              return JSON.parse(line);
-            }
-            return null;
-          } catch (error) {
-            console.error("Error parsing JSON:", error);
-            return null;
-          }
-        });
-
-        const selectedAlbums = {};
-
-        albumsData.forEach((album) => {
-          if (album && album.releaseInfo && album.releaseInfo.artist) {
-            const { title, artist } = album.releaseInfo;
-            const albumNameScore = levenshtein(data.album.toLowerCase(), title.toLowerCase());
-
-            if (!selectedAlbums[album.source] || selectedAlbums[album.source].score > albumNameScore) {
-              selectedAlbums[album.source] = { album, score: albumNameScore };
-            }
-          }
-        });
-
-        const selectedAlbumsInfo = Object.values(selectedAlbums).map((item) => item.album);
-        const result = {
-          fetchedFrom: "Spotify",
-          albumInfo: selectedAlbumsInfo[0].releaseInfo, // Selecting the best matching album info
-          artworkUrl: selectedAlbumsInfo[0].bigCoverUrl, // Use big cover URL for artwork
-          joinUrl: selectedAlbumsInfo[0].releaseInfo.url,
-        };
-
-        // Cache the result for future use
-        cache[cacheKey] = result;
-        return result;
-      } catch (error) {
-        console.error("An error occurred:", error);
-        return null;
-      }
-    }
-  },
-  "qobuz": async (metadata) => {
-    if ((metadata.albumartist || metadata.artist) && metadata.album) {
-      const apiUrl = "https://covers.musichoarders.xyz/api/search";
-      const artistName = metadata.albumartist || metadata.artist;
-      const albumName = metadata.album;
-      const countryCode = "gb"; // gonna see if i can ip locate this or use the local system time to determine location
-      const dataSources = ["qobuz"];
-
-      const data = {
-        artist: artistName,
-        album: albumName,
-        country: countryCode,
-        sources: dataSources,
-      };
-
-      // Generate a unique cache key based on the request data
-      const cacheKey = JSON.stringify(data);
-
-      // Check if the data is available in the cache
-      if (cache[cacheKey]) {
-        
-        return cache[cacheKey];
-      }
-
-      try {
-        const response = await axios.post(apiUrl, data, { headers: { 'User-Agent':'VLC-RPC V1.2' }});
-        const responseText = response.data;
-        const albumsData = responseText.split("\n").map((line) => {
-          try {
-            if (line.trim().length > 0) {
-              return JSON.parse(line);
-            }
-            return null;
-          } catch (error) {
-            console.error("Error parsing JSON:", error);
-            return null;
-          }
-        });
-
-        const selectedAlbums = {};
-
-        albumsData.forEach((album) => {
-          if (album && album.releaseInfo && album.releaseInfo.artist) {
-            const { title, artist } = album.releaseInfo;
-            const albumNameScore = levenshtein(data.album.toLowerCase(), title.toLowerCase());
-
-            if (!selectedAlbums[album.source] || selectedAlbums[album.source].score > albumNameScore) {
-              selectedAlbums[album.source] = { album, score: albumNameScore };
-            }
-          }
-        });
-
-        const selectedAlbumsInfo = Object.values(selectedAlbums).map((item) => item.album);
-        const result = {
-          fetchedFrom: "Qobuz",
-          albumInfo: selectedAlbumsInfo[0].releaseInfo, // Selecting the best matching album info
-          artworkUrl: selectedAlbumsInfo[0].bigCoverUrl, // Use big cover URL for artwork
-          joinUrl: selectedAlbumsInfo[0].releaseInfo.url,
-        };
-
-        // Cache the result for future use
-        cache[cacheKey] = result;
-        return result;
-      } catch (error) {
-        console.error("An error occurred:", error);
-        return null;
-      }
-    }
+  "bandcamp": async (metadata) => {
+    return musichoardersFetcher.fetch("bandcamp", metadata);
   },
   "deezer": async (metadata) => {
-    if ((metadata.albumartist || metadata.artist) && metadata.album) {
-      const apiUrl = "https://covers.musichoarders.xyz/api/search";
-      const artistName = metadata.albumartist || metadata.artist;
-      const albumName = metadata.album;
-      const countryCode = "gb"; // gonna see if i can ip locate this or use the local system time to determine location
-      const dataSources = ["deezer"];
-
-      const data = {
-        artist: artistName,
-        album: albumName,
-        country: countryCode,
-        sources: dataSources,
-      };
-
-      // Generate a unique cache key based on the request data
-      const cacheKey = JSON.stringify(data);
-
-      // Check if the data is available in the cache
-      if (cache[cacheKey]) {
-  
-        return cache[cacheKey];
-      }
-
-      try {
-        const response = await axios.post(apiUrl, data, { headers: { 'User-Agent':'VLC-RPC V1.2' }});
-        const responseText = response.data;
-        const albumsData = responseText.split("\n").map((line) => {
-          try {
-            if (line.trim().length > 0) {
-              return JSON.parse(line);
-            }
-            return null;
-          } catch (error) {
-            console.error("Error parsing JSON:", error);
-            return null;
-          }
-        });
-
-        const selectedAlbums = {};
-
-        albumsData.forEach((album) => {
-          if (album && album.releaseInfo && album.releaseInfo.artist) {
-            const { title, artist } = album.releaseInfo;
-            const albumNameScore = levenshtein(data.album.toLowerCase(), title.toLowerCase());
-
-            if (!selectedAlbums[album.source] || selectedAlbums[album.source].score > albumNameScore) {
-              selectedAlbums[album.source] = { album, score: albumNameScore };
-            }
-          }
-        });
-
-        const selectedAlbumsInfo = Object.values(selectedAlbums).map((item) => item.album);
-        const result = {
-          fetchedFrom: "Deezer",
-          albumInfo: selectedAlbumsInfo[0].releaseInfo, // Selecting the best matching album info
-          artworkUrl: selectedAlbumsInfo[0].bigCoverUrl, // Use big cover URL for artwork
-          joinUrl: selectedAlbumsInfo[0].releaseInfo.url,
-        };
-
-        // Cache the result for future use
-        cache[cacheKey] = result;
-        return result;
-      } catch (error) {
-        console.error("An error occurred:", error);
-        return null;
-      }
-    }
+    return musichoardersFetcher.fetch("deezer", metadata);
+  },
+  "musichoarders": async (metadata) => {
+    return musichoardersFetcher.fetch("musichoarders", metadata);
+  },
+  "qobuz": async (metadata) => {
+    return musichoardersFetcher.fetch("qobuz", metadata);
+  },
+  "spotify": async (metadata) => {
+    return musichoardersFetcher.fetch("spotify", metadata);
+  },
+  "soundcloud": async (metadata) => {
+    return musichoardersFetcher.fetch("soundcloud", metadata);
+  },
+  "tidal": async (metadata) => {
+    return musichoardersFetcher.fetch("tidal", metadata);
   },
   "youtube": async (metadata) => {
-    const result = await yt(`${metadata.albumartist ? metadata.albumartist : (metadata.artist ? metadata.artist : "")} ${metadata.title ? metadata.title : metadata.filename}`.trim(), { limit: 1 });
+    const result = await yt(`${metadata.ALBUMARTIST || metadata.artist || ""} ${metadata.title || metadata.filename}`.trim(), { limit: 1 });
     if (result.items.length > 0)
     {
       return {
@@ -436,13 +207,8 @@ module.exports = async (status) => {
     console.log(status.stats.decodedvideo);
   }
 
-  // Find correct artist name to display,
-  //  then append one character since Discord state must be at least two characters long
-  let display_artist = (meta.albumartist
-                        ? meta.albumartist + " "
-                        : (meta.artist
-                           ? meta.artist + " "
-                           : undefined));
+  // Find the correct artist name to display
+  let display_artist = meta.artist || meta.ALBUMARTIST || undefined;
 
   // Large and small image hover texts
   let hoverTexts = [config.rpc.largeImageText, config.rpc.smallImageText].map(
@@ -471,20 +237,20 @@ module.exports = async (status) => {
       {
         return undefined;
       }
-    }
-  );
+    } // Fit the hover text to Discord supported range [2, 128]
+  ).map(e => e ? (e + " ").substring(0, 128) : e);
 
   let output = {
     // Shows file thats playing.. well most of the time
     details: meta.title || meta.filename || "Playing something..",
-    largeImageText: hoverTexts[0],
+    largeImageText: hoverTexts[0] || config.rpc.largeImageText,
     // Sets album art depending on whats set in the file, or if album art cannot be found
     largeImageKey: artwork || "https://i.pinimg.com/originals/67/f6/cb/67f6cb14f862297e3c145014cdd6b635.jpg",
     smallImageKey: status.state,
     smallImageText: hoverTexts[1] || `Volume: ${Math.round(status.volume / 2.56)}%`,
     instance: true,
   };
-  
+
   if (joinUrl && joinLabel)
   {
     output.buttons = [
@@ -531,13 +297,6 @@ module.exports = async (status) => {
     if (meta.album)
       output.state += ` - ${meta.album}`;
 
-    // Trim the state if too long
-    if (output.state.length > 128)
-    {
-      console.warn("The string ('" + output.state + "') is too long for discord :/");
-      output.state = output.state.substring(0, 128);
-    }
-
     // Display track number
     if (meta.track_number && meta.track_total && config.rpc.displayTrackNumber)
     {
@@ -549,6 +308,10 @@ module.exports = async (status) => {
   {
     output.state = status.state;
   }
+
+  // Fit the status text to Discord supported range [2, 128]
+  output.state = (output.state + " ").substring(0, 128);
+
   const end = Math.floor(Date.now() / 1000 + ((status.length - status.time) / status.rate));
   if (status.state === 'playing' && config.rpc.displayTimeRemaining && status.length != 0) {
     output.endTimestamp = end;
