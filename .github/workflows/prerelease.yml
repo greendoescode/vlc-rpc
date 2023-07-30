@@ -22,19 +22,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Get latest version from package.json
-        id: get_version
-        run: echo "VERSION=$(jq -r .version package.json | tr -d '[:punct:]')" >> $GITHUB_ENV
+      - name: Get Version From Package.json
+        id: get-version
+        uses: beaconbrigade/package-json-version@v0.3
+        with:
+          path: .
 
       - name: Create release zip
-        run: zip -r "release-$VERSION.zip" .
+        run: zip -r "release-${{ steps.get-version.outputs.version }}.zip" .
 
       - name: Create GitHub Release
         id: create_github_release
         uses: actions/create-release@v1
         with:
-          tag_name: "v$VERSION"
-          release_name: "Pre-release $VERSION"
+          tag_name: "v${{ steps.get-version.outputs.version }}"
+          release_name: "Pre-release ${{ steps.get-version.outputs.version }}"
           draft: false
           prerelease: true
         env:
@@ -44,4 +46,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: "release"
-          path: "release-$VERSION.zip"
+          path: "release-${{ steps.get-version.outputs.version }}.zip"
