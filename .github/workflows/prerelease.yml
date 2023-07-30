@@ -30,13 +30,14 @@ jobs:
         id: create_release
         run: |
           mkdir -p release
-          zip -r "release/release-$VERSION-$GITHUB_SHA.zip" .
+          ZIP_FILENAME="release/release-$VERSION-$(echo $GITHUB_SHA | head -c 7).zip"
+          zip -r "$ZIP_FILENAME" .
 
       - name: Create GitHub Release
         id: create_github_release
         uses: actions/create-release@v1
         with:
-          tag_name: "pre-release-$VERSION-$GITHUB_SHA"
+          tag_name: "pre-release-$VERSION-$(echo $GITHUB_SHA | head -c 7)"
           release_name: "Pre-release $VERSION"
           draft: false
           prerelease: true
@@ -47,8 +48,8 @@ jobs:
         id: upload_artifact
         uses: actions/upload-artifact@v2
         with:
-          name: "release-$VERSION-$GITHUB_SHA"
-          path: "release/release-$VERSION-$GITHUB_SHA.zip"
+          name: "release-$VERSION-$(echo $GITHUB_SHA | head -c 7)"
+          path: "release/release-$VERSION-$(echo $GITHUB_SHA | head -c 7).zip"
 
       - name: Get the uploaded ZIP artifact ID
         id: get_zip_artifact_id
@@ -59,5 +60,5 @@ jobs:
           curl -X PATCH \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d "{\"name\":\"release-$VERSION-$GITHUB_SHA.zip\"}" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/assets/${{ env.ARTIFACT_ID }}?name=release-$VERSION-$GITHUB_SHA.zip"
+            -d "{\"name\":\"release-$VERSION-$(echo $GITHUB_SHA | head -c 7).zip\"}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/assets/${{ env.ARTIFACT_ID }}?name=release-$VERSION-$(echo $GITHUB_SHA | head -c 7).zip"
