@@ -30,14 +30,14 @@ jobs:
         id: create_release
         run: |
           mkdir -p release
-          zip -r release/release-${{ env.VERSION }}.zip .
+          zip -r "release/release-$VERSION.zip" .
 
       - name: Create GitHub Release
         id: create_github_release
         uses: actions/create-release@v1
         with:
-          tag_name: pre-release-${{ env.VERSION }}-${{ github.sha }}
-          release_name: Pre-release ${{ env.VERSION }}
+          tag_name: "pre-release-$VERSION-${{ github.sha }}"
+          release_name: "Pre-release $VERSION"
           draft: false
           prerelease: true
         env:
@@ -46,17 +46,17 @@ jobs:
       - name: Upload release artifact
         uses: actions/upload-artifact@v2
         with:
-          name: release-${{ env.VERSION }}
-          path: release/release-${{ env.VERSION }}.zip
+          name: "release-$VERSION"
+          path: "release/release-$VERSION.zip"
 
       - name: Get the uploaded ZIP artifact ID
         id: get_zip_artifact_id
-        run: echo "ARTIFACT_ID=$(curl -s -X POST -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' -H 'Content-Type: application/zip' --data-binary @release/release-${{ env.VERSION }}.zip 'https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_github_release.outputs.id }}/assets?name=release-${{ env.VERSION }}.zip' | jq -r .id)" >> $GITHUB_ENV
+        run: echo "ARTIFACT_ID=$(curl -s -X POST -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' -H 'Content-Type: application/zip' --data-binary @release/release-$VERSION.zip 'https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_github_release.outputs.id }}/assets?name=release-$VERSION.zip' | jq -r .id)" >> $GITHUB_ENV
 
       - name: Associate ZIP artifact with the GitHub Release
         run: |
           curl -X PATCH \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d '{"name":"release-${{ env.VERSION }}.zip"}' \
-            "https://api.github.com/repos/${{ github.repository }}/releases/assets/${{ env.ARTIFACT_ID }}?name=release-${{ env.VERSION }}.zip"
+            -d "{\"name\":\"release-$VERSION.zip\"}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/assets/${{ env.ARTIFACT_ID }}?name=release-$VERSION.zip"
