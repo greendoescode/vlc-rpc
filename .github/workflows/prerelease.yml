@@ -44,6 +44,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload release artifact
+        id: upload_artifact
         uses: actions/upload-artifact@v2
         with:
           name: "release-$VERSION"
@@ -51,7 +52,7 @@ jobs:
 
       - name: Get the uploaded ZIP artifact ID
         id: get_zip_artifact_id
-        run: echo "ARTIFACT_ID=$(curl -s -X POST -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' -H 'Content-Type: application/zip' --data-binary @release/release-$VERSION.zip 'https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_github_release.outputs.id }}/assets?name=release-$VERSION.zip' | jq -r .id)" >> $GITHUB_ENV
+        run: echo "ARTIFACT_ID=$(jq -r '.upload_artifact.artifact_id' $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
 
       - name: Associate ZIP artifact with the GitHub Release
         run: |
