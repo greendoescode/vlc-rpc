@@ -22,7 +22,7 @@ jobs:
       - name: Get latest version from package.json
         id: get_version
         run: |
-          VERSION=$(npm version | awk '/\@/{print $2}')
+          VERSION=$(npm version | awk '/\@/{print $2}' | tr -d "[:punct:]")
           echo "VERSION=$VERSION" >> .env.production
           echo "Version from package.json: $VERSION"
 
