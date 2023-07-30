@@ -21,18 +21,10 @@ jobs:
 
       - name: Get latest version from package.json
         id: get_version
-        run: |
-          VERSION=$(node -p "require('./package.json').version" | tr -d "[:punct:]")
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "Version from package.json: $VERSION"
-
-      - name: Install zip utility
-        run: sudo apt-get install -y zip
+        run: echo "VERSION=$(node -p \"require('./package.json').version\" | tr -d \"[:punct:]\")" >> $GITHUB_ENV
 
       - name: Create release zip
-        run: |
-          mkdir -p release
-          zip -r "release/release-$VERSION.zip" .
+        run: zip -r "release-$VERSION.zip" .
 
       - name: Create GitHub Release
         id: create_github_release
@@ -49,4 +41,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: "release"
-          path: "release/release-$VERSION.zip"
+          path: "release-$VERSION.zip"
