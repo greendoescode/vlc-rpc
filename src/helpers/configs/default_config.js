@@ -1,10 +1,14 @@
 module.exports = {
 
+  // Version of the config file
+  configFileVersion: "1.2",
+
   // The full path to your VLC executable
   // If left blank, typical defaults are used
   vlcPath: "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe",
-  
+
   debug : "false",
+
 
   console: {
     // Sets the "Presence Updated" text to off or on

@@ -5,10 +5,10 @@
 
 const fs = require('fs');
 const log = require('../helpers/lager.js');
-const config = require('../helpers/configLoader.js').getOrInit();
+const config = require('../helpers/configLoader.js').getOrInit('config.js');
 const axios = require('axios');
 const yt = require("ytsr");
-const path = require("path")
+const path = require("path");
 
 let musichoardersFetcher = new (require('./musichoardersFetcher.js'))(config.rpc.persistentMusicHoardersCache);
 
