@@ -62,6 +62,7 @@ class MusicHoardersFetcher
       process.on('SIGINT', () => {
         // Save the cache to the file when the application is terminated using SIGINT (Ctrl+C)
         this.#saveCacheToFile();
+        process.exit(0); // Otherwise won't exit
       });
     }
   }
