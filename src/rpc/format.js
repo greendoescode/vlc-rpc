@@ -5,11 +5,13 @@
 
 const fs = require('fs');
 const log = require('../helpers/lager.js');
-const config = require('../helpers/configLoader.js').getOrInit('config.js');
+const cl = require('../helpers/configLoader.js');
+const config = cl.getOrInit('config.js');
 const axios = require('axios');
 const yt = require("ytsr");
 const path = require("path");
 
+let staticOverridesFetcher = new (require('./staticOverridesFetcher.js'))(cl.getOrInit('staticoverrides.js'));
 let musichoardersFetcher = new (require('./musichoardersFetcher.js'))(config.rpc.persistentMusicHoardersCache);
 
 // These functions, 'fetchers', provide uniform inteface for simple access to the APIs
@@ -18,6 +20,12 @@ let musichoardersFetcher = new (require('./musichoardersFetcher.js'))(config.rpc
 // In order to be as simple as possible, the functions may throw exceptions or not return anything.
 //   They are expected to be called through the `fetchSafely()` wrapper.
 const fetchers = {
+  "staticoverrides": async (metadata) => {
+    return staticOverridesFetcher.fetch(metadata);
+  },
+  "musichoarders": async (metadata) => {
+    return musichoardersFetcher.fetch("musichoarders", metadata);
+  },
   "apple": async (metadata) => { // Doesn't rely on MusicHoarders, keep it that way, just in case
     if ((metadata.ALBUMARTIST || metadata.artist) && metadata.title)
     {
@@ -43,9 +51,6 @@ const fetchers = {
   },
   "deezer": async (metadata) => {
     return musichoardersFetcher.fetch("deezer", metadata);
-  },
-  "musichoarders": async (metadata) => {
-    return musichoardersFetcher.fetch("musichoarders", metadata);
   },
   "qobuz": async (metadata) => {
     return musichoardersFetcher.fetch("qobuz", metadata);
