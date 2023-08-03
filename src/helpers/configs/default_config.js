@@ -35,7 +35,7 @@ module.exports = {
     updateInterval: 1000,
 
     // Preferred provider of the album artwork. Supported values
-    //   "staticcverrides" (for values from `config/staticoverrides.js`)
+    //   "staticoverrides" (for values from `config/staticoverrides.js`)
     //   "musichoarders" (for closest fit from servicese below)
     //   "apple", "bandcamp", "deezer", "qobuz", "spotify", "soundcloud" and "tidal"
     whereToFetchOnline: "staticoverrides",
