@@ -27,6 +27,7 @@ Join us on [Discord](https://discord.gg/CHegxjdFCD).
 
 Configuration is done by editing the [config/config.js](./src/helpers/configs/default_config.js) file.
 Each option is explained in a comment above it.
+
 This file is auto-generated when first starting vlc-rpc.
 
 For advanced features, see [ADVANCED.md](./info/advanced.md).
