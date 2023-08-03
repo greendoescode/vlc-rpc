@@ -86,7 +86,7 @@ class MusicHoardersFetcher
    * Fetch artwork and join URLs if not cached, otherwise return cached
    * @param {string} service  service name, e.g. "spotify"
    * @param {Object} metadata VLC metadata
-   * @returns {?{fetchedFrom: string, artworkUrl: string, joinUrl: string}}
+   * @returns {?{artworkFrom: ?string, artworkUrl: ?string, joinFrom: ?string, joinUrl: ?string}}
    */
   async fetch(service, metadata)
   {
@@ -152,8 +152,9 @@ class MusicHoardersFetcher
           for (let serviceKey in bestResults)
           {
             bestResults[serviceKey] = {
-              fetchedFrom: MusicHoardersFetcher.#services[bestResults[serviceKey].album.source],
+              artworkFrom: MusicHoardersFetcher.#services[bestResults[serviceKey].album.source],
               artworkUrl: bestResults[serviceKey].album.smallCoverUrl,
+              joinFrom: MusicHoardersFetcher.#services[bestResults[serviceKey].album.source],
               joinUrl: bestResults[serviceKey].album.releaseInfo.url,
             };
           };

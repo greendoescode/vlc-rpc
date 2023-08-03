@@ -39,8 +39,9 @@ const fetchers = {
       if (result.data.resultCount > 0 && result.data.results[0] !== undefined)
       {
         return {
-          fetchedFrom: "Apple Music",
+          artworkFrom: "Apple Music",
           artworkUrl: result.data.results[0].artworkUrl100,
+          joinFrom: "Apple Music",
           joinUrl: result.data.results[0].trackViewUrl
         };
       }
@@ -69,8 +70,9 @@ const fetchers = {
     if (result.items.length > 0)
     {
       return {
-        fetchedFrom: "Youtube",
+        artworkFrom: undefined,
         artworkUrl: undefined,
+        joinFrom: "Youtube",
         joinUrl: result.items[0].url
       };
     }
@@ -81,7 +83,7 @@ const fetchers = {
  * Safe wrapper for calling a fetcher in try-catch block
  * @param {string} fetcherName name of the fetcher to use
  * @param {Object} metadata    VLC metadata
- * @returns {!{artworkFrom: string, artworkUrl: string, joinFrom: string, joinUrl: string}}
+ * @returns {!{artworkFrom: ?string, artworkUrl: ?string, joinFrom: ?string, joinUrl: ?string}}
  */
 async function fetchSafely(fetcherName, metadata)
 {
@@ -89,10 +91,6 @@ async function fetchSafely(fetcherName, metadata)
   try
   {
     returnValue = await fetchers[fetcherName](metadata);
-    if (returnValue && fetcherName !== "staticoverrides")
-    {
-      returnValue.artworkFrom = returnValue.joinFrom = returnValue.fetchedFrom;
-    }
   }
   catch (err)
   {
@@ -109,7 +107,7 @@ async function fetchSafely(fetcherName, metadata)
  * @param {string} preferredArtworkProvider name of preferred artwork fetcher
  * @param {string} preferredJoinProvider    name of preferred join fetcher
  * @param {Object} metadata                 VLC metadata
- * @returns {!{artworkFrom: string, artworkUrl: string, joinFrom: string, joinUrl: string}}
+ * @returns {!{artworkFrom: ?string, artworkUrl: ?string, joinFrom: ?string, joinUrl: ?string}}
  */
 async function combinedFetch(preferredArtworkProvider, preferredJoinProvider, metadata)
 {
