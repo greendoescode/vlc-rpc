@@ -5,11 +5,13 @@
 
 const fs = require('fs');
 const log = require('../helpers/lager.js');
-const config = require('../helpers/configLoader.js').getOrInit('config.js');
+const cl = require('../helpers/configLoader.js');
+const config = cl.getOrInit('config.js');
 const axios = require('axios');
 const yt = require("ytsr");
 const path = require("path");
 
+let staticOverridesFetcher = new (require('./staticOverridesFetcher.js'))(cl.getOrInit('staticoverrides.js'));
 let musichoardersFetcher = new (require('./musichoardersFetcher.js'))(config.rpc.persistentMusicHoardersCache);
 
 // These functions, 'fetchers', provide uniform inteface for simple access to the APIs
@@ -18,6 +20,12 @@ let musichoardersFetcher = new (require('./musichoardersFetcher.js'))(config.rpc
 // In order to be as simple as possible, the functions may throw exceptions or not return anything.
 //   They are expected to be called through the `fetchSafely()` wrapper.
 const fetchers = {
+  "staticoverrides": async (metadata) => {
+    return staticOverridesFetcher.fetch(metadata);
+  },
+  "musichoarders": async (metadata) => {
+    return musichoardersFetcher.fetch("musichoarders", metadata);
+  },
   "apple": async (metadata) => { // Doesn't rely on MusicHoarders, keep it that way, just in case
     if ((metadata.ALBUMARTIST || metadata.artist) && metadata.title)
     {
@@ -31,8 +39,9 @@ const fetchers = {
       if (result.data.resultCount > 0 && result.data.results[0] !== undefined)
       {
         return {
-          fetchedFrom: "Apple Music",
+          artworkFrom: "Apple Music",
           artworkUrl: result.data.results[0].artworkUrl100,
+          joinFrom: "Apple Music",
           joinUrl: result.data.results[0].trackViewUrl
         };
       }
@@ -43,9 +52,6 @@ const fetchers = {
   },
   "deezer": async (metadata) => {
     return musichoardersFetcher.fetch("deezer", metadata);
-  },
-  "musichoarders": async (metadata) => {
-    return musichoardersFetcher.fetch("musichoarders", metadata);
   },
   "qobuz": async (metadata) => {
     return musichoardersFetcher.fetch("qobuz", metadata);
@@ -64,8 +70,9 @@ const fetchers = {
     if (result.items.length > 0)
     {
       return {
-        fetchedFrom: "Youtube",
+        artworkFrom: undefined,
         artworkUrl: undefined,
+        joinFrom: "Youtube",
         joinUrl: result.items[0].url
       };
     }
@@ -76,7 +83,7 @@ const fetchers = {
  * Safe wrapper for calling a fetcher in try-catch block
  * @param {string} fetcherName name of the fetcher to use
  * @param {Object} metadata    VLC metadata
- * @returns {!{fetchedFrom: string, artworkUrl: string, joinUrl: string}}
+ * @returns {!{artworkFrom: ?string, artworkUrl: ?string, joinFrom: ?string, joinUrl: ?string}}
  */
 async function fetchSafely(fetcherName, metadata)
 {
@@ -100,19 +107,19 @@ async function fetchSafely(fetcherName, metadata)
  * @param {string} preferredArtworkProvider name of preferred artwork fetcher
  * @param {string} preferredJoinProvider    name of preferred join fetcher
  * @param {Object} metadata                 VLC metadata
- * @returns {!{artworkUrl: string, artworkFrom: string, joinUrl: string, joinFrom: string}}
+ * @returns {!{artworkFrom: ?string, artworkUrl: ?string, joinFrom: ?string, joinUrl: ?string}}
  */
 async function combinedFetch(preferredArtworkProvider, preferredJoinProvider, metadata)
 {
-  let artworkUrl, artworkFrom, joinUrl, joinFrom;
+  let artworkFrom, artworkUrl, joinFrom, joinUrl;
   let results = [];
 
   // First try fetching artwork URL using preferred provider
   results[preferredArtworkProvider] = await fetchSafely(preferredArtworkProvider, metadata);
   if(results[preferredArtworkProvider].artworkUrl)
   {
+    artworkFrom = results[preferredArtworkProvider].artworkFrom;
     artworkUrl = results[preferredArtworkProvider].artworkUrl;
-    artworkFrom = results[preferredArtworkProvider].fetchedFrom;
   }
 
   // Next try fetching join URL from preferred provider
@@ -123,20 +130,20 @@ async function combinedFetch(preferredArtworkProvider, preferredJoinProvider, me
   // Set it separately, in case both preferred providers are the same
   if (results[preferredJoinProvider].joinUrl)
   {
+    joinFrom = results[preferredJoinProvider].joinFrom;
     joinUrl = results[preferredJoinProvider].joinUrl;
-    joinFrom = results[preferredJoinProvider].fetchedFrom;
   }
 
   // Try using preferred join provider as a backup artwork provider and vice versa
   if (!artworkUrl && results[preferredJoinProvider].artworkUrl)
   {
+    artworkFrom = results[preferredJoinProvider].artworkFrom;
     artworkUrl = results[preferredJoinProvider].artworkUrl;
-    artworkFrom = results[preferredJoinProvider].fetchedFrom;
   }
   if (!joinUrl && results[preferredArtworkProvider].joinUrl)
   {
+    joinFrom = results[preferredArtworkProvider].joinFrom;
     joinUrl = results[preferredArtworkProvider].joinUrl;
-    joinFrom = results[preferredArtworkProvider].fetchedFrom;
   }
 
   // In case either still isn't set, iterate all other providers
@@ -148,13 +155,13 @@ async function combinedFetch(preferredArtworkProvider, preferredJoinProvider, me
       results[availableProviderNames[ii]] = await fetchSafely(availableProviderNames[ii], metadata);
       if(!artworkUrl && results[availableProviderNames[ii]].artworkUrl)
       {
+        artworkFrom = results[availableProviderNames[ii]].artworkFrom;
         artworkUrl = results[availableProviderNames[ii]].artworkUrl;
-        artworkFrom = results[availableProviderNames[ii]].fetchedFrom;
       }
       if (!joinUrl && results[availableProviderNames[ii]].joinUrl)
       {
+        joinFrom = results[availableProviderNames[ii]].joinFrom;
         joinUrl = results[availableProviderNames[ii]].joinUrl;
-        joinFrom = results[availableProviderNames[ii]].fetchedFrom;
       }
     }
   }

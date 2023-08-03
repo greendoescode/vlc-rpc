@@ -34,13 +34,14 @@ module.exports = {
     // How frequently in milliseconds to check for updates
     updateInterval: 1000,
 
-    // Preferred provider of the album artwork
-    // Supported: "apple", "bandcamp", "deezer", "qobuz", "spotify", "soundcloud" and "tidal"
-    //   Use "musichoarders" to use closest fit from all services above
-    whereToFetchOnline: "musichoarders",
+    // Preferred provider of the album artwork. Supported values
+    //   "staticoverrides" (for values from `config/staticoverrides.js`)
+    //   "musichoarders" (for closest fit from servicese below)
+    //   "apple", "bandcamp", "deezer", "qobuz", "spotify", "soundcloud" and "tidal"
+    whereToFetchOnline: "staticoverrides",
 
     // Preferred provider of the rpc button (as above + "youtube")
-    changeButtonProvider: "spotify",
+    changeButtonProvider: "staticoverrides",
 
     // Whether to use persistent cache for MusicHoarders queries
     persistentMusicHoardersCache: false,
