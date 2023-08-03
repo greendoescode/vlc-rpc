@@ -81,7 +81,7 @@ const fetchers = {
  * Safe wrapper for calling a fetcher in try-catch block
  * @param {string} fetcherName name of the fetcher to use
  * @param {Object} metadata    VLC metadata
- * @returns {!{fetchedFrom: string, artworkUrl: string, joinUrl: string}}
+ * @returns {!{artworkFrom: string, artworkUrl: string, joinFrom: string, joinUrl: string}}
  */
 async function fetchSafely(fetcherName, metadata)
 {
@@ -89,6 +89,10 @@ async function fetchSafely(fetcherName, metadata)
   try
   {
     returnValue = await fetchers[fetcherName](metadata);
+    if (returnValue && fetcherName !== "staticoverrides")
+    {
+      returnValue.artworkFrom = returnValue.joinFrom = returnValue.fetchedFrom;
+    }
   }
   catch (err)
   {
@@ -105,19 +109,19 @@ async function fetchSafely(fetcherName, metadata)
  * @param {string} preferredArtworkProvider name of preferred artwork fetcher
  * @param {string} preferredJoinProvider    name of preferred join fetcher
  * @param {Object} metadata                 VLC metadata
- * @returns {!{artworkUrl: string, artworkFrom: string, joinUrl: string, joinFrom: string}}
+ * @returns {!{artworkFrom: string, artworkUrl: string, joinFrom: string, joinUrl: string}}
  */
 async function combinedFetch(preferredArtworkProvider, preferredJoinProvider, metadata)
 {
-  let artworkUrl, artworkFrom, joinUrl, joinFrom;
+  let artworkFrom, artworkUrl, joinFrom, joinUrl;
   let results = [];
 
   // First try fetching artwork URL using preferred provider
   results[preferredArtworkProvider] = await fetchSafely(preferredArtworkProvider, metadata);
   if(results[preferredArtworkProvider].artworkUrl)
   {
+    artworkFrom = results[preferredArtworkProvider].artworkFrom;
     artworkUrl = results[preferredArtworkProvider].artworkUrl;
-    artworkFrom = results[preferredArtworkProvider].fetchedFrom;
   }
 
   // Next try fetching join URL from preferred provider
@@ -128,20 +132,20 @@ async function combinedFetch(preferredArtworkProvider, preferredJoinProvider, me
   // Set it separately, in case both preferred providers are the same
   if (results[preferredJoinProvider].joinUrl)
   {
+    joinFrom = results[preferredJoinProvider].joinFrom;
     joinUrl = results[preferredJoinProvider].joinUrl;
-    joinFrom = results[preferredJoinProvider].fetchedFrom;
   }
 
   // Try using preferred join provider as a backup artwork provider and vice versa
   if (!artworkUrl && results[preferredJoinProvider].artworkUrl)
   {
+    artworkFrom = results[preferredJoinProvider].artworkFrom;
     artworkUrl = results[preferredJoinProvider].artworkUrl;
-    artworkFrom = results[preferredJoinProvider].fetchedFrom;
   }
   if (!joinUrl && results[preferredArtworkProvider].joinUrl)
   {
+    joinFrom = results[preferredArtworkProvider].joinFrom;
     joinUrl = results[preferredArtworkProvider].joinUrl;
-    joinFrom = results[preferredArtworkProvider].fetchedFrom;
   }
 
   // In case either still isn't set, iterate all other providers
@@ -153,13 +157,13 @@ async function combinedFetch(preferredArtworkProvider, preferredJoinProvider, me
       results[availableProviderNames[ii]] = await fetchSafely(availableProviderNames[ii], metadata);
       if(!artworkUrl && results[availableProviderNames[ii]].artworkUrl)
       {
+        artworkFrom = results[availableProviderNames[ii]].artworkFrom;
         artworkUrl = results[availableProviderNames[ii]].artworkUrl;
-        artworkFrom = results[availableProviderNames[ii]].fetchedFrom;
       }
       if (!joinUrl && results[availableProviderNames[ii]].joinUrl)
       {
+        joinFrom = results[availableProviderNames[ii]].joinFrom;
         joinUrl = results[availableProviderNames[ii]].joinUrl;
-        joinFrom = results[availableProviderNames[ii]].fetchedFrom;
       }
     }
   }

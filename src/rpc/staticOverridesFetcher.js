@@ -1,12 +1,14 @@
 
+/**
+ * Fetcher of static overrides
+ */
 class StaticOverridesFetcher
 {
-  /** Overrides data to use */
-  #data
+  /** @type {!Object} #data structure for storing the lookup data */
+  #data = {};
 
   constructor(rawData)
   {
-    this.#data = {};
     for (let v of rawData)
     {
       // Use key stringified with sorted keys
@@ -14,28 +16,35 @@ class StaticOverridesFetcher
     }
   }
 
+  /**
+   * @param {!Object} VLC metadata
+   * @returns {!{artworkFrom: ?string, artworkUrl: ?string, joinFrom: ?string, joinUrl: ?string}}
+   */
   fetch(metadata)
   {
     let result = {};
 
-    for (let v of StaticOverridesFetcher.createPowerset(metadata.ALBUMARTIST,
+    for (let v of StaticOverridesFetcher.createPowerset(metadata.ALBUMARTIST || metadata.artist,
                                                         metadata.album))
     {
       let lookup_result = this.#data[JSON.stringify(v)];
 
       if (lookup_result)
       {
-        if (!result.fetchedFrom && lookup_result.fetchedFrom)
-          result.fetchedFrom = lookup_result.fetchedFrom;
         if (!result.artworkUrl && lookup_result.artworkUrl)
+        {
+          result.artworkFrom = lookup_result.artworkFrom;
           result.artworkUrl = lookup_result.artworkUrl;
+        }
         if (!result.joinUrl && lookup_result.joinUrl)
+        {
+          result.joinFrom = lookup_result.joinFrom;
           result.joinUrl = lookup_result.joinUrl;
-
-        if (result.fetchedFrom && result.artworkUrl && result.joinUrl)
-          return result;
+        }
       }
     }
+
+    return result;
   }
 
   static createPowerset(albumArtist, albumName)
