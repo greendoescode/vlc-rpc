@@ -36,6 +36,7 @@
   },
   "scripts": {
     "start": "node ./src/app.js",
+    "test": "node ./src/test.js",
     "run": "npm start"
   },
   "repository": {
