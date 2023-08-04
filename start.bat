@@ -8,8 +8,14 @@ if NOT EXIST node_modules (
     )
     ECHO Modules installed.
 )
-ECHO Starting script...
-CALL npm start
+
+if exist node.exe (
+    ECHO Detected local Node.js executable, attempting to use it...
+    CALL node.exe src/app.js
+) else (
+    ECHO Did not detect local Node.js executable, attempting to use `npm`...
+    CALL npm start
+)
 
 if errorlevel 1 (
     if "%1" == "--keep-on-error" (
