@@ -245,7 +245,7 @@ module.exports = async (status) => {
         return undefined;
       }
     } // Fit the hover text to Discord supported range [2, 128]
-  ).map(e => e ? (e + " ").substring(0, 128) : e);
+  ).map(e => e ? (e + "  ").substring(0, 128) : e);
 
   let output = {
     // Shows file thats playing.. well most of the time
@@ -317,7 +317,7 @@ module.exports = async (status) => {
   }
 
   // Fit the status text to Discord supported range [2, 128]
-  output.state = (output.state + " ").substring(0, 128);
+  output.state = (output.state + "  ").substring(0, 128);
 
   const end = Math.floor(Date.now() / 1000 + ((status.length - status.time) / status.rate));
   if (status.state === 'playing' && config.rpc.displayTimeRemaining && status.length != 0) {
