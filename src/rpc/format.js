@@ -244,15 +244,15 @@ module.exports = async (status) => {
       {
         return undefined;
       }
-    } // Fit the hover text to Discord supported range [2, 128]
-  ).map(e => e ? (e + " ").substring(0, 128) : e);
+    }
+  );
 
   let output = {
     // Shows file thats playing.. well most of the time
     details: meta.title || meta.filename || "Playing something..",
-    largeImageText: hoverTexts[0] || config.rpc.largeImageText,
     // Sets album art depending on whats set in the file, or if album art cannot be found
     largeImageKey: artwork || "https://i.pinimg.com/originals/67/f6/cb/67f6cb14f862297e3c145014cdd6b635.jpg",
+    largeImageText: hoverTexts[0] || config.rpc.largeImageText,
     smallImageKey: status.state,
     smallImageText: hoverTexts[1] || `Volume: ${Math.round(status.volume / 2.56)}%`,
     instance: true,
@@ -316,8 +316,11 @@ module.exports = async (status) => {
     output.state = status.state;
   }
 
-  // Fit the status text to Discord supported range [2, 128]
-  output.state = (output.state + " ").substring(0, 128);
+  // Fit the details, status, image texts to Discord supported range [2, 128]
+  output.details = (output.details + "  ").substring(0, 128);
+  output.state = (output.state + "  ").substring(0, 128);
+  output.largeImageText = (output.largeImageText + "  ").substring(0, 128);
+  output.smallImageText = (output.smallImageText + "  ").substring(0, 128);
 
   const end = Math.floor(Date.now() / 1000 + ((status.length - status.time) / status.rate));
   if (status.state === 'playing' && config.rpc.displayTimeRemaining && status.length != 0) {
