@@ -24,7 +24,7 @@ const fetchers = {
     return staticOverridesFetcher.fetch(metadata);
   },
   "musichoarders": async (metadata) => {
-    return musichoardersFetcher.fetch("musichoarders", metadata);
+    //return musichoardersFetcher.fetch("musichoarders", metadata);
   },
   "apple": async (metadata) => { // Doesn't rely on MusicHoarders, keep it that way, just in case
     if ((metadata.ALBUMARTIST || metadata.artist) && metadata.title)
@@ -48,22 +48,65 @@ const fetchers = {
     }
   },
   "bandcamp": async (metadata) => {
-    return musichoardersFetcher.fetch("bandcamp", metadata);
+    if ((metadata.ALBUMARTIST || metadata.artist) && (metadata.album || metadata.title))
+    {
+      const result = await axios.post("https://bandcamp.com/api/bcsearch_public_api/1/autocomplete_elastic", {
+        fan_id: null,
+        full_page: false,
+        search_filter: "",
+        search_text: `${metadata.ALBUMARTIST || metadata.artist} ${metadata.album || metadata.title}`,
+      },{
+        headers: {"Accept-Encoding": "gzip,deflate,compress" }
+      });
+      if (result.data.auto.results.length > 0)
+      {
+        let resultItem = result.data.auto.results[0];
+        //console.log(resultTrack);
+        return {
+          artworkFrom: "Bandcamp",
+          artworkUrl: resultItem.img.replace("/img/", "/img/a"),
+          joinFrom: "Bandcamp",
+          joinUrl: resultItem.item_url_path
+        }
+      }
+    }
   },
   "deezer": async (metadata) => {
-    return musichoardersFetcher.fetch("deezer", metadata);
+    //return musichoardersFetcher.fetch("deezer", metadata);
   },
   "qobuz": async (metadata) => {
-    return musichoardersFetcher.fetch("qobuz", metadata);
+    //return musichoardersFetcher.fetch("qobuz", metadata);
+    // Also seems to require access token
   },
   "spotify": async (metadata) => {
-    return musichoardersFetcher.fetch("spotify", metadata);
+    /* // Fails, no access token
+    console.log("Searching Spotify:");
+    const result = await axios.get("https://api-partner.spotify.com/pathfinder/v1/query", {
+      params: {
+        operationName: "searchDesktop",
+        variables: JSON.stringify({
+          "searchTerm": `${metadata.ALBUMARTIST || metadata.artist} ${metadata.title}`,
+          "offset":0,"limit":10,"numberOfTopResults":5,"includeAudiobooks":true
+        }),
+        extensions: JSON.stringify({
+          "persistedQuery": {
+            "version":1,
+            "sha256Hash":"130115162add6f3499d2f88ead8a37a7cad1d4d2314f3a206377035e7d26b74c"
+          }
+        })
+      },
+      headers: {"Accept-Encoding": "gzip,deflate,compress" }
+    });
+    console.log(result.data);
+    "extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%22130115162add6f3499d2f88ead8a37a7cad1d4d2314f3a206377035e7d26b74c%22%7D%7D"
+    */
   },
   "soundcloud": async (metadata) => {
-    return musichoardersFetcher.fetch("soundcloud", metadata);
+    //return musichoardersFetcher.fetch("soundcloud", metadata);
+    // Also seems to require access token
   },
   "tidal": async (metadata) => {
-    return musichoardersFetcher.fetch("tidal", metadata);
+    //return musichoardersFetcher.fetch("tidal", metadata);
   },
   "youtube": async (metadata) => {
     const result = await yt(`${metadata.ALBUMARTIST || metadata.artist || ""} ${metadata.title || metadata.filename}`.trim(), { limit: 1 });
