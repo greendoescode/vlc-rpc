@@ -24,8 +24,8 @@ jobs:
           path: .
       - name: Package for Windows
         run: |
-          wget -nv -P .dist/win-x64 https://nodejs.org/download/release/latest/win-x64/node.exe
-          cp -r * .dist/win-x64/
+          wget -P .dist/win-x64 https://nodejs.org/download/release/latest/win-x64/node.exe
+          cp -rv * .dist/win-x64/
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
         with:
