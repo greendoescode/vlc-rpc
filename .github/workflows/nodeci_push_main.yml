@@ -1,9 +1,9 @@
-name: Node CI - master
+name: Node CI - main
 
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build_and_test_and_nightly:
