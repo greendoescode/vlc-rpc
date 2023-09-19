@@ -1,4 +1,4 @@
-name: Node CI
+name: Node CI - master
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - master
 
 jobs:
-  build_and_test:
+  build_and_test_and_nightly:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
