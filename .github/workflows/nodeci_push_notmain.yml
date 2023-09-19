@@ -1,9 +1,9 @@
-name: Node CI - non-master
+name: Node CI - non-main
 
 on:
   push:
     branches-ignore:
-      - master
+      - main
 
 jobs:
   build_and_test:
