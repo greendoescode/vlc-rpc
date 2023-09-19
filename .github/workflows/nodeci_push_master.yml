@@ -1,0 +1,51 @@
+name: Node CI
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Get current date
+        id: get-date
+        run: |
+          echo "NOW=$(date +'%Y%m%dT%H%M%S')" >> $GITHUB_ENV
+      - name: npm install, build, and test
+        run: |
+          npm install
+          npm run build --if-present
+          npm test
+      - name: Get Version From package.json
+        id: get-version
+        uses: beaconbrigade/package-json-version@v0.3
+        with:
+          path: .
+      - name: Package for Windows
+        run: |
+          wget -P .dist/win-x64 https://nodejs.org/download/release/latest/win-x64/node.exe
+          cp -rv * .dist/win-x64/
+          mkdir -p .dist/zipped/
+          zip -r .dist/zipped/vlc-rpc-v${{steps.get-version.outputs.version}}-nightly${{env.NOW}}-bundled-win-x64.zip .dist/win-x64
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: vlc-rpc-v${{steps.get-version.outputs.version}}-nightly${{env.NOW}}-bundled-win-x64
+          path: |
+            .dist/win-x64
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage-report
+          path: output/test/code-coverage.html
+      - name: Update nightly release
+        uses: pyTooling/Actions/releaser@main
+        with:
+            tag: nightly
+            rm: true
+            token: ${{ secrets.GITHUB_TOKEN }}
+            files: .dist/zipped/*.zip
