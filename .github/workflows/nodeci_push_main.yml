@@ -38,9 +38,9 @@ jobs:
           mkdir -p .dist/linux-x64/
           mkdir -p .help/linux-x64/node
           cp -rv * .dist/linux-x64/
-          binName=$(wget -O - https://nodejs.org/download/release/latest/ | grep -Poh "node-v[0-9]+.[0-9]+.[0-9]+-linux-x64.tar.gz(?=<)")
-          wget -P .help/linux-x64 "https://nodejs.org/download/release/latest/$binName"
-          tar -zxvf .help/linux-x64/node-v21.1.0-linux-x64.tar.gz -C .help/linux-x64/node
+          archiveName=$(wget -O - https://nodejs.org/download/release/latest/ | grep -Poh "node-v[0-9]+.[0-9]+.[0-9]+-linux-x64.tar.gz(?=<)")
+          wget -P .help/linux-x64 "https://nodejs.org/download/release/latest/$archiveName"
+          tar -zxvf ".help/linux-x64/$archiveName" -C .help/linux-x64/node
           cp -rv .help/linux-x64/node/**/bin/node .dist/linux-x64/
           zip -r .dist/zipped/vlc-rpc-v${{steps.get-version.outputs.version}}-nightly${{env.NOW}}-bundled-linux-x64.zip .dist/linux-x64
       - name: Archive Windows artifacts
