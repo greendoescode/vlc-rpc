@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "asynckit": "^0.4.0",
-    "axios": "^1.4.0",
+    "axios": "^1.6.0",
     "bindings": "^1.5.0",
     "combined-stream": "^1.0.8",
     "delayed-stream": "^1.0.0",
