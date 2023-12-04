@@ -25,36 +25,12 @@ jobs:
         uses: beaconbrigade/package-json-version@v0.3
         with:
           path: .
-      - name: Package for Windows
-        run: |
-          mkdir -p .dist/zipped/
-          mkdir -p .dist/win-x64/
-          cp -rv * .dist/win-x64/
-          wget -P .dist/win-x64 https://nodejs.org/download/release/latest/win-x64/node.exe
-          zip -r .dist/zipped/vlc-rpc-v${{steps.get-version.outputs.version}}-nightly${{env.NOW}}-bundled-win-x64.zip .dist/win-x64
-      - name: Package for Linux
-        run: |
-          mkdir -p .dist/zipped/
-          mkdir -p .dist/linux-x64/
-          mkdir -p .help/linux-x64/node
-          cp -rv * .dist/linux-x64/
-          archiveName=$(wget -O - https://nodejs.org/download/release/latest/ | grep -Poh "node-v[0-9]+.[0-9]+.[0-9]+-linux-x64.tar.gz(?=<)")
-          wget -P .help/linux-x64 "https://nodejs.org/download/release/latest/$archiveName"
-          tar -zxvf ".help/linux-x64/$archiveName" -C .help/linux-x64/node
-          cp -rv .help/linux-x64/node/**/bin/node .dist/linux-x64/
-          zip -r .dist/zipped/vlc-rpc-v${{steps.get-version.outputs.version}}-nightly${{env.NOW}}-bundled-linux-x64.zip .dist/linux-x64
-      - name: Archive Windows artifacts
-        uses: actions/upload-artifact@v3
+      - uses: ./.github/actions/nodeci-build-windows
         with:
           name: vlc-rpc-v${{steps.get-version.outputs.version}}-nightly${{env.NOW}}-bundled-win-x64
-          path: |
-            .dist/win-x64
-      - name: Archive Linux artifacts
-        uses: actions/upload-artifact@v3
+      - uses: ./.github/actions/nodeci-build-linux
         with:
           name: vlc-rpc-v${{steps.get-version.outputs.version}}-nightly${{env.NOW}}-bundled-linux-x64
-          path: |
-            .dist/linux-x64
       - name: Archive code coverage results
         uses: actions/upload-artifact@v3
         with:
