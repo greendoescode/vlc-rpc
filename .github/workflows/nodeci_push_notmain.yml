@@ -28,7 +28,7 @@ jobs:
       - uses: ./.github/actions/nodeci-build-windows
         with:
           name: vlc-rpc-v${{steps.get-version.outputs.version}}-nightly${{env.NOW}}-bundled-win-x64
-      - uses: ./.github/actions/nodeci-build-windows
+      - uses: ./.github/actions/nodeci-build-linux
         with:
           name: vlc-rpc-v${{steps.get-version.outputs.version}}-nightly${{env.NOW}}-bundled-linux-x64
       - name: Archive code coverage results

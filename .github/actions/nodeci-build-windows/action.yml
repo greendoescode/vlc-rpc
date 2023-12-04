@@ -12,6 +12,7 @@ runs:
         cp -rv * .dist/win-x64/
         wget -P .dist/win-x64 https://nodejs.org/download/release/latest/win-x64/node.exe
         zip -r ".dist/zipped/${{inputs.name}}.zip" .dist/win-x64
+      shell: bash
     - name: Archive Windows artifacts
       uses: actions/upload-artifact@v3
       with:

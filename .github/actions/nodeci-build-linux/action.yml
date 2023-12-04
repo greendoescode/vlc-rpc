@@ -16,6 +16,7 @@ runs:
         tar -zxvf ".help/linux-x64/$archiveName" -C .help/linux-x64/node
         cp -rv .help/linux-x64/node/**/bin/node .dist/linux-x64/
         zip -r ".dist/zipped/${{inputs.name}}.zip" .dist/linux-x64
+      shell: bash
     - name: Archive Linux artifacts
       uses: actions/upload-artifact@v3
       with:
