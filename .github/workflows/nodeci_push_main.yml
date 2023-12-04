@@ -38,7 +38,8 @@ jobs:
           mkdir -p .dist/linux-x64/
           mkdir -p .help/linux-x64/node
           cp -rv * .dist/linux-x64/
-          wget -P .help/linux-x64 https://nodejs.org/download/release/latest/node-v21.1.0-linux-x64.tar.gz
+          binName = $(wget -O - https://nodejs.org/download/release/latest/ | grep -i -o -a -h -m 1 "node-v\d+.\d+.\d+-linux-x64.tar.gz")
+          wget -P .help/linux-x64 https://nodejs.org/download/release/latest/$binName
           tar -zxvf .help/linux-x64/node-v21.1.0-linux-x64.tar.gz -C .help/linux-x64/node
           cp -rv .help/linux-x64/node/**/bin/node .dist/linux-x64/
           zip -r .dist/zipped/vlc-rpc-v${{steps.get-version.outputs.version}}-nightly${{env.NOW}}-bundled-linux-x64.zip .dist/linux-x64
