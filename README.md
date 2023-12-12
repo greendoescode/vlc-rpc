@@ -2,7 +2,7 @@
 ![GitHub](https://img.shields.io/github/license/GreenDiscord/vlc-rpc) ![Discord](https://img.shields.io/discord/1044078573142687814)
 
 Discord rich presence for VLC media player.
-This is a fork of [PigPogs](https://github.com/Pigpog/vlc-discord-rpc) VLC RPC, adding automatic album art (by fetching from [MH Covers](https://covers.musichoarders.xyz)).
+This is a fork of [PigPogs](https://github.com/Pigpog/vlc-discord-rpc) VLC RPC, adding automatic album art.
 
 ![Example](./example.png)
 
@@ -20,15 +20,15 @@ Join us on [Discord](https://discord.gg/CHegxjdFCD).
 
  1. [Download the latest release for your platform](https://github.com/GreenDiscord/vlc-rpc/releases)
  2. Unzip the file
- 3. Launch the start file
+ 3. Launch the `start.bat` (on Windows) or `start.sh` (on Linux)
  4. Play media in the VLC window that opens
 
 ### Configuration
 
-Configuration is done by editing the [config/config.js](./src/helpers/configs/default_config.js) file.
-Each option is explained in a comment above it.
+Configuration is done by editing the `config/config.js` file.
+This file is created when first starting vlc-rpc.
 
-This file is auto-generated when first starting vlc-rpc.
+Each option is explained in a comment above it.
 
 For advanced features, see [ADVANCED.md](./info/advanced.md).
 
