@@ -15,11 +15,12 @@ runs:
         wget -P .help/linux-x64 "https://nodejs.org/download/release/latest/$archiveName"
         tar -zxvf ".help/linux-x64/$archiveName" -C .help/linux-x64/node
         cp -rv .help/linux-x64/node/**/bin/node .dist/linux-x64/
-        zip -r ".dist/zipped/${{inputs.name}}.zip" .dist/linux-x64
+        cd .dist/linux-x64
+        zip -r "../zipped/${{inputs.name}}.zip" *
+        cd ../..
       shell: bash
     - name: Archive Linux artifacts
       uses: actions/upload-artifact@v3
       with:
         name: ${{inputs.name}}
-        path: |
-          .dist/linux-x64
+        path: .dist/linux-x64/
