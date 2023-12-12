@@ -30,10 +30,9 @@ This file is created when first starting vlc-rpc.
 
 Each option is explained in a comment above it.
 
-For advanced features, see [ADVANCED.md](./info/advanced.md).
+For advanced features, see [ADVANCED.md](./advanced.md).
 
 ## Limitations
- - When using anything but itunes, a ratelimit will occure after some time.
  - When running multiple concurrent instances, only the first-opened instance of VLC will have a rich presence
  - This program does NOT allow you to stream media to others
 
