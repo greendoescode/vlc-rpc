@@ -38,3 +38,6 @@ For advanced features, see [ADVANCED.md](./advanced.md).
 
 ## Known Bugs
  - If you find any bugs, please report them in [Issues](https://github.com/GreenDiscord/vlc-rpc/issues) or the [Discord](https://discord.gg/CHegxjdFCD)
+
+## Nightly Builds
+Nightly builds are posted as "Pre-releases" after every commit. These nightly builds may add features, but minimal implementations of them. Using these builds can help us diagnose issues, while giving you more, [Click Here](https://github.com/GreenDiscord/vlc-rpc/releases/tag/nightly) to get the latest nightly builds.
