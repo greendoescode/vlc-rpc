@@ -45,7 +45,7 @@ Nightly builds are posted as "Pre-releases" after every commit. These nightly bu
 ## Development 
 In my opinion, development has reached its current limit with nothing else being wanted from uses.
 If you'd like to help out, you can just clean up code and help setting up automatic testing of builds.
- 1. `git clone` this repo
- 2. Navigate to where you clone the repo and then either
+ 1. `git clone` this repo.
+ 2. Navigate to where you cloned the repo and then either:
  3. Launch the `start.bat` (on Windows) or `start.sh` (on Linux)
  4. Or install the dependencies with `npm install`
