@@ -41,3 +41,7 @@ For advanced features, see [ADVANCED.md](./advanced.md).
 
 ## Nightly Builds
 Nightly builds are posted as "Pre-releases" after every commit. These nightly builds may add features, but minimal implementations of them. Using these builds can help us diagnose issues, while giving you more, [Click Here](https://github.com/GreenDiscord/vlc-rpc/releases/tag/nightly) to get the latest nightly builds.
+
+## Development 
+In my opinion, development has reached its current limit with nothing else being wanted from uses.
+If you'd like to help out, you can just clean up code and help automatic testing of builds.
