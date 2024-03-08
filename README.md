@@ -8,22 +8,37 @@ This is a fork of [PigPogs](https://github.com/Pigpog/vlc-discord-rpc) VLC RPC, 
 
 Join us on [Discord](https://discord.gg/CHegxjdFCD).
 
-# Setup
+## Installation
 
-### Requirements
+Your options are either to download prebuilt archive or build the project yourself.
 
-- [Node.JS and NPM](https://nodejs.org/en/) (not needed for bundled releases)
+#### Common requirements
+
 - [VLC](https://www.videolan.org/index.html)
 - [Discord desktop client](https://discord.com/)
 
-### Steps
+### Using Prebuilt release
+
+#### Steps
 
  1. [Download the latest release for your platform](https://github.com/GreenDiscord/vlc-rpc/releases)
  2. Unzip the file
  3. Launch the `start.bat` (on Windows) or `start.sh` (on Linux)
  4. Play media in the VLC window that opens
 
-### Configuration
+### Using Manual build
+
+#### Additional requirements
+
+- [Node.JS and NPM](https://nodejs.org/en/)
+
+#### Steps
+ 1. `git clone` this repo.
+ 2. Navigate to where you cloned the repo and then either:
+ 3. Launch the `start.bat` (on Windows) or `start.sh` (on Linux)
+ 4. Or install the dependencies with `npm install`
+
+## Configuration
 
 Configuration is done by editing the `config/config.js` file.
 This file is created when first starting vlc-rpc.
@@ -37,7 +52,7 @@ For advanced features, see [ADVANCED.md](./advanced.md).
  - This program does NOT allow you to stream media to others
 
 ## Known Bugs
- - If you find any bugs, please report them in [Issues](https://github.com/GreenDiscord/vlc-rpc/issues) or the [Discord](https://discord.gg/CHegxjdFCD)
+If you find any bugs, please report them in [Issues](https://github.com/GreenDiscord/vlc-rpc/issues) or the [Discord](https://discord.gg/CHegxjdFCD)
 
 ## Nightly Builds
 Nightly builds are posted as "Pre-releases" after every commit. These nightly builds may add features, but minimal implementations of them. Using these builds can help us diagnose issues, while giving you more, [Click Here](https://github.com/GreenDiscord/vlc-rpc/releases/tag/nightly) to get the latest nightly builds.
@@ -45,7 +60,4 @@ Nightly builds are posted as "Pre-releases" after every commit. These nightly bu
 ## Development 
 In my opinion, development has reached its current limit with nothing else being wanted from uses.
 If you'd like to help out, you can just clean up code and help setting up automatic testing of builds.
- 1. `git clone` this repo.
- 2. Navigate to where you cloned the repo and then either:
- 3. Launch the `start.bat` (on Windows) or `start.sh` (on Linux)
- 4. Or install the dependencies with `npm install`
+ 
