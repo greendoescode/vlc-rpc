@@ -59,5 +59,8 @@ Nightly builds are posted as "Pre-releases" after every commit. These nightly bu
 
 ## Development 
 In my opinion, development has reached its current limit with nothing else being wanted from uses.
+
+This repo will be from this commit forward be using "conventional commits", [Here's](https://dev.to/jordharr/an-introduction-to-conventional-commits-bd4) a rundown on what they are and how to use them properly.
+
 If you'd like to help out, you can just clean up code and help setting up automatic testing of builds.
  
