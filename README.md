@@ -1,7 +1,7 @@
 # vlc-rpc
 ![GitHub](https://img.shields.io/github/license/GreenDiscord/vlc-rpc) ![Discord](https://img.shields.io/discord/1044078573142687814)
 
-Discord rich presence for VLC media player.
+Discord-rich presence for VLC media player.
 This is a fork of [PigPogs](https://github.com/Pigpog/vlc-discord-rpc) VLC RPC, adding automatic album art.
 
 ![Example](./example.png)
@@ -10,7 +10,7 @@ Join us on [Discord](https://discord.gg/CHegxjdFCD).
 
 ## Installation
 
-Your options are either to download prebuilt archive or build the project yourself.
+Your options are either to download a prebuilt archive or build the project yourself.
 
 #### Common requirements
 
@@ -43,7 +43,7 @@ Your options are either to download prebuilt archive or build the project yourse
 Configuration is done by editing the `config/config.js` file.
 This file is created when first starting vlc-rpc.
 
-Each option is explained in a comment above it.
+Each option is explained in a comment above.
 
 For advanced features, see [ADVANCED.md](./advanced.md).
 
@@ -55,12 +55,12 @@ For advanced features, see [ADVANCED.md](./advanced.md).
 If you find any bugs, please report them in [Issues](https://github.com/GreenDiscord/vlc-rpc/issues) or the [Discord](https://discord.gg/CHegxjdFCD)
 
 ## Nightly Builds
-Nightly builds are posted as "Pre-releases" after every commit. These nightly builds may add features, but minimal implementations of them. Using these builds can help us diagnose issues, while giving you more, [Click Here](https://github.com/GreenDiscord/vlc-rpc/releases/tag/nightly) to get the latest nightly builds.
+Nightly builds are posted as "Pre-releases" after every commit. These nightly builds may add features, but minimal implementations of them. Using these builds can help us diagnose issues while giving you more, [Click Here](https://github.com/GreenDiscord/vlc-rpc/releases/tag/nightly) to get the latest nightly builds.
 
 ## Development 
-In my opinion, development has reached its current limit with nothing else being wanted from uses.
+Development has reached its current limit with nothing else being wanted from users.
 
-This repo will be from this commit forward be using "conventional commits", [Here's](https://dev.to/jordharr/an-introduction-to-conventional-commits-bd4) a rundown on what they are and how to use them properly.
+This repo from this commit forward will be using "conventional commits", [Here's](https://dev.to/jordharr/an-introduction-to-conventional-commits-bd4) a rundown on what they are and how to use them properly.
 
-If you'd like to help out, you can just clean up code and help setting up automatic testing of builds.
+If you'd like to help out, you can clean up the code and help set up automatic testing of builds.
  
