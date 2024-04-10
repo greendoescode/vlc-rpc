@@ -11,7 +11,7 @@ if NOT EXIST node_modules (
 
 if exist node.exe (
     ECHO Detected local Node.js executable, attempting to use it...
-    CALL node.exe src/app.js
+    CALL node.exe --trace-deprecation src/app.js
 ) else (
     ECHO Did not detect local Node.js executable, attempting to use `npm`...
     CALL npm start
