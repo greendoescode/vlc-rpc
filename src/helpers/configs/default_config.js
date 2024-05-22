@@ -37,7 +37,7 @@ module.exports = {
     // Preferred provider of the album artwork. Supported values
     //   "staticoverrides" (for values from `config/staticoverrides.js`)
     //   "musichoarders" (for closest fit from servicese below)
-    //   "apple", "bandcamp", "deezer", "qobuz", "spotify", "soundcloud" and "tidal"
+    //   "apple", "bandcamp", "deezer", "qobuz", "spotify", "soundcloud", "tidal" and "coverartarchive"
     whereToFetchOnline: "staticoverrides",
 
     // Preferred provider of the rpc button (as above + "youtube")
