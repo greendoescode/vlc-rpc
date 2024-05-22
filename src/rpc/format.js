@@ -10,6 +10,7 @@ const config = cl.getOrInit('config.js');
 const axios = require('axios');
 const yt = require("ytsr");
 const path = require("path");
+const { debug } = require('console');
 
 let staticOverridesFetcher = new (require('./staticOverridesFetcher.js'))(cl.getOrInit('staticoverrides.js'));
 let musichoardersFetcher = new (require('./musichoardersFetcher.js'))(config.rpc.persistentMusicHoardersCache);
@@ -29,7 +30,6 @@ const fetchers = {
   "apple": async (metadata) => { // Doesn't rely on MusicHoarders, keep it that way, just in case
     if ((metadata.ALBUMARTIST || metadata.artist) && metadata.title)
     {
-      try{
       const result = await axios.get("https://itunes.apple.com/search", {
         params: {
           media: "music",
@@ -47,14 +47,10 @@ const fetchers = {
         };
       }
     }
-    catch(err) 
-    { return console.log("Attempting to switch provider, Error Occured.");};
-    }
   },
   "bandcamp": async (metadata) => {
     if ((metadata.ALBUMARTIST || metadata.artist) && (metadata.album || metadata.title))
     {
-      try {
       const result = await axios.post("https://bandcamp.com/api/bcsearch_public_api/1/autocomplete_elastic", {
         fan_id: null,
         full_page: false,
@@ -75,14 +71,10 @@ const fetchers = {
         }
       }
     }
-    catch(err) 
-    { return console.log("Attempting to switch provider, Error Occured.");};
-    }
   },
   "coverartarchive": async (metadata) => {
     if ((metadata.MUSICBRAINZ_ALBUMID) && metadata.title)
     {
-      try {
       const result = await axios.get("https://coverartarchive.org/release/" + metadata.MUSICBRAINZ_ALBUMID, {
         headers: {"Accept-Encoding": "gzip,deflate,compress" }
       })
@@ -95,9 +87,6 @@ const fetchers = {
           joinUrl: result.data.release
         };
       }
-    }
-    catch(err) 
-    { return console.log("Attempting to switch provider, Error Occured.");};
     }
   },
   "deezer": async (metadata) => {
@@ -138,7 +127,6 @@ const fetchers = {
     //return musichoardersFetcher.fetch("tidal", metadata);
   },
   "youtube": async (metadata) => {
-    try {
     const result = await yt(`${metadata.ALBUMARTIST || metadata.artist || ""} ${metadata.title || metadata.filename}`.trim(), { limit: 1 });
     if (result.items.length > 0)
     {
@@ -149,9 +137,6 @@ const fetchers = {
         joinUrl: result.items[0].url
       };
     }
-  }
-  catch(err) 
-    { return console.log("Attempting to switch provider, Error Occured.");};
   }
 }
 
@@ -170,7 +155,12 @@ async function fetchSafely(fetcherName, metadata)
   }
   catch (err)
   {
-    console.log(err);
+    if(debug == 'true'){
+      console.log(err);
+    } else {
+      console.log("Attempting to switch provider, Error Occured.");
+    }
+    
   }
   finally
   {
