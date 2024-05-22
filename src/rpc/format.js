@@ -80,7 +80,7 @@ const fetchers = {
     }
   },
   "coverartarchive": async (metadata) => {
-    if ((metadata.ALBUMARTIST || metadata.artist) && metadata.title)
+    if ((metadata.MUSICBRAINZ_ALBUMID) && metadata.title)
     {
       try {
       const result = await axios.get("https://coverartarchive.org/release/" + metadata.MUSICBRAINZ_ALBUMID, {
