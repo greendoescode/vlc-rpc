@@ -58,8 +58,6 @@ If you find any bugs, please report them in [Issues](https://github.com/GreenDis
 Nightly builds are posted as "Pre-releases" after every commit. These nightly builds may add features, but minimal implementations of them. Using these builds can help us diagnose issues while giving you more, [Click Here](https://github.com/GreenDiscord/vlc-rpc/releases/tag/nightly) to get the latest nightly builds.
 
 ## Development 
-Development has reached its current limit with nothing else being wanted from users.
-
 This repo from this commit forward will be using "conventional commits", [Here's](https://dev.to/jordharr/an-introduction-to-conventional-commits-bd4) a rundown on what they are and how to use them properly.
 
 If you'd like to help out, you can clean up the code and help set up automatic testing of builds.
