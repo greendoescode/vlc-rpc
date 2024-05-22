@@ -8,8 +8,7 @@
     "discord-rpc": "^4.0.0",
     "js-levenshtein": "^1.1.6",
     "register-scheme": "^0.0.2",
-    "vlc.js": "^3.2.7",
-    "ytsr": "^3.8.0"
+    "vlc.js": "^3.2.7"
   },
   "devDependencies": {
     "@types/node": "^18.11.3"

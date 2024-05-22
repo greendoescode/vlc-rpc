@@ -8,7 +8,6 @@ const log = require('../helpers/lager.js');
 const cl = require('../helpers/configLoader.js');
 const config = cl.getOrInit('config.js');
 const axios = require('axios');
-const yt = require("ytsr");
 const path = require("path");
 const { debug } = require('console');
 
@@ -76,8 +75,7 @@ const fetchers = {
     if ((metadata.MUSICBRAINZ_ALBUMID) && metadata.title)
     {
       const result = await axios.get("https://coverartarchive.org/release/" + metadata.MUSICBRAINZ_ALBUMID, {
-        headers: {"Accept-Encoding": "gzip,deflate,compress" }
-      })
+        headers: {"Accept-Encoding": "gzip,deflate,compress" }})
       if (result.data.images[0] !== undefined)
       {
         return {
@@ -125,18 +123,6 @@ const fetchers = {
   },
   "tidal": async (metadata) => {
     //return musichoardersFetcher.fetch("tidal", metadata);
-  },
-  "youtube": async (metadata) => {
-    const result = await yt(`${metadata.ALBUMARTIST || metadata.artist || ""} ${metadata.title || metadata.filename}`.trim(), { limit: 1 });
-    if (result.items.length > 0)
-    {
-      return {
-        artworkFrom: undefined,
-        artworkUrl: undefined,
-        joinFrom: "Youtube",
-        joinUrl: result.items[0].url
-      };
-    }
   }
 }
 
@@ -155,12 +141,7 @@ async function fetchSafely(fetcherName, metadata)
   }
   catch (err)
   {
-    if(debug == 'true'){
-      console.log(err);
-    } else {
-      console.log("Attempting to switch provider, Error Occured.");
-    }
-    
+    console.log(err);
   }
   finally
   {

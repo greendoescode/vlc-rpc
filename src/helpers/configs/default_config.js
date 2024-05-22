@@ -40,7 +40,7 @@ module.exports = {
     //   "apple", "bandcamp", "deezer", "qobuz", "spotify", "soundcloud", "tidal" and "coverartarchive"
     whereToFetchOnline: "staticoverrides",
 
-    // Preferred provider of the rpc button (as above + "youtube")
+    // Preferred provider of the rpc button (as above)
     changeButtonProvider: "staticoverrides",
 
     // Whether to use persistent cache for MusicHoarders queries
