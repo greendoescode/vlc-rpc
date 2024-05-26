@@ -78,9 +78,10 @@ const fetchers = {
         headers: {"Accept-Encoding": "gzip,deflate,compress" }})
       if (result.data.images[0] !== undefined)
       {
+        console.warn(result.data.images[0].thumbnails.small);
         return {
           artworkFrom: "Cover Art Archive",
-          artworkUrl: result.data.images[0].image,
+          artworkUrl: result.data.images[0].thumbnails.small,
           joinFrom: "Cover Art Archive",
           joinUrl: result.data.release
         };
