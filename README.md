@@ -1,6 +1,6 @@
 # VLC-RPC
 
-![GitHub License](https://img.shields.io/github/license/GreenDiscord/vlc-rpc) ![Discord](https://img.shields.io/discord/1044078573142687814)
+![GitHub License](https://img.shields.io/github/license/greendoescode/vlc-rpc) ![Discord](https://img.shields.io/discord/1044078573142687814)
 
 VLC-RPC is a Discord-rich presence integration for the VLC media player. This fork of [PigPog's VLC Discord RPC](https://github.com/Pigpog/vlc-discord-rpc) adds automatic album art.
 
@@ -54,7 +54,7 @@ You can install VLC-RPC by downloading a prebuilt archive or by building the pro
 #### Steps
 
 1. Clone the repository:
-   `git clone https://github.com/GreenDiscord/vlc-rpc.git`
+   `git clone https://github.com/greendoescode/vlc-rpc.git`
 2. Navigate to the cloned repository directory:
    `cd vlc-rpc`
 3. Launch `start.bat` (on Windows) or `start.sh` (on Linux).
@@ -74,11 +74,11 @@ Each option in the configuration file is explained by a comment above it. For ad
 
 ## Known Bugs
 
-If you find any bugs, please report them in the [Issues](https://github.com/GreenDiscord/vlc-rpc/issues) or on [Discord](https://discord.gg/CHegxjdFCD).
+If you find any bugs, please report them in the [Issues](https://github.com/greendoescode/vlc-rpc/issues) or on [Discord](https://discord.gg/CHegxjdFCD).
 
 ## Nightly Builds
 
-Nightly builds are posted as "Pre-releases" after every commit. These nightly builds may add features but with minimal implementations. Using these builds can help us diagnose issues while giving you early access to new features. [Click here](https://github.com/GreenDiscord/vlc-rpc/releases/tag/nightly) to get the latest nightly builds.
+Nightly builds are posted as "Pre-releases" after every commit. These nightly builds may add features but with minimal implementations. Using these builds can help us diagnose issues while giving you early access to new features. [Click here](https://github.com/greendoescode/vlc-rpc/releases/tag/nightly) to get the latest nightly builds.
 
 ## Development
 
