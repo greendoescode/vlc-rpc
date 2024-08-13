@@ -4,7 +4,7 @@
   "description": "Discord rich presence for VLC media player.",
   "main": "index.js",
   "dependencies": {
-    "axios": "^1.6.0",
+    "axios": "^1.7.4",
     "discord-rpc": "^4.0.0",
     "js-levenshtein": "^1.1.6",
     "register-scheme": "^0.0.2",
