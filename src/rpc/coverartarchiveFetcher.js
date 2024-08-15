@@ -19,7 +19,6 @@ class CoverArtArchiveFetcher extends ACachingFetcher {
                     headers: {"Accept-Encoding": "gzip,deflate,compress" }
                 });
             if (result.data.images[0] !== undefined){
-                //console.warn(result.data.images[0].thumbnails.small);
                 return {
                     artworkFrom: "Cover Art Archive",
                     artworkUrl: result.data.images[0].thumbnails.small,
@@ -27,6 +26,20 @@ class CoverArtArchiveFetcher extends ACachingFetcher {
                     joinUrl: result.data.release
                 };
             }
+        } else if ((metadata.MB_ALBUMID) && metadata.title) {
+            const result = await axios.get(
+                "https://coverartarchive.org/release/" + metadata.MB_ALBUMID,
+                {
+                    headers: {"Accept-Encoding": "gzip,deflate,compress" }
+                });
+            if (result.data.images[0] !== undefined){
+                return {
+                    artworkFrom: "Cover Art Archive",
+                    artworkUrl: result.data.images[0].thumbnails.small,
+                    joinFrom: "Cover Art Archive",
+                    joinUrl: result.data.release
+                };
+            } 
         }
     }
 }
