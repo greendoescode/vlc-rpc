@@ -65,16 +65,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: env.RELEASE_EXISTS != 'true'
 
-      - name: Get Release ID
-        if: env.RELEASE_EXISTS == 'true'
-        id: get_release_id
-        run: |
-          set -e
-          release_id=$(curl -s -X GET -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/releases/tags/v${{ steps.get-version.outputs.version }}" | jq -r '.id')
-          echo "RELEASE_ID=$release_id" >> $GITHUB_ENV
-
-      - name: Attach artifact to release
-        if: env.RELEASE_EXISTS == 'true'
-        run: |
-          set -e
-          curl -X POST -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/zip" --data-binary vlc-rpc-v${{steps.get-version.outputs.version}}-bundled-win-x64.zip "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }}/assets?name=vlc-rpc-v${{steps.get-version.outputs.version}}-bundled-win-x64.zip"
+        
+      - name: Update nightly release
+        uses: pyTooling/Actions/releaser@main
+        with:
+            tag: ${{ steps.get-version.outputs.version }}
+            token: ${{ secrets.GITHUB_TOKEN }}
+            files: .dist/zipped/*.zip
