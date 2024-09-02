@@ -46,12 +46,6 @@ jobs:
           name: vlc-rpc-v${{steps.get-version.outputs.version}}-bundled-win-x64
           path: |
             .dist/win-x64
-            
-      - name: Archive code coverage results
-        uses: actions/upload-artifact@v3
-        with:
-          name: code-coverage-report
-          path: output/test/code-coverage.html
 
       - name: Check release exists
         uses: mukunku/tag-exists-action@v1.6.0
