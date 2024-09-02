@@ -28,11 +28,11 @@ jobs:
           
       - uses: ./.github/actions/nodeci-build-windows
         with:
-          name: vlc-rpc-v${{steps.get-version.outputs.version}}-nightly${{env.NOW}}-bundled-win-x64
+          name: vlc-rpc-v${{steps.get-version.outputs.version}}-bundled-win-x64
           
       - uses: ./.github/actions/nodeci-build-linux
         with:
-          name: vlc-rpc-v${{steps.get-version.outputs.version}}-nightly${{env.NOW}}-bundled-linux-x64
+          name: vlc-rpc-v${{steps.get-version.outputs.version}}-bundled-linux-x64
           
       - name: Archive code coverage results
         uses: actions/upload-artifact@v3
@@ -53,20 +53,11 @@ jobs:
           name: code-coverage-report
           path: output/test/code-coverage.html
 
-      - name: Check if release exists
-        id: check_release
-        run: |
-          set -e
-          response=$(curl -s -o /dev/null -w "%{http_code}" -X GET -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/releases/tags/v${{ steps.get-version.outputs.version }}")
-          if [[ $response -eq 200 ]]; then
-            echo "Release v${{ steps.get-version.outputs.version }}" exists.
-            echo "RELEASE_EXISTS=true" >> $GITHUB_ENV
-          else
-            echo "Release v${{ steps.get-version.outputs.version }}" does not exist.
-            echo "RELEASE_EXISTS=false" >> $GITHUB_ENV
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check release exists
+        uses: mukunku/tag-exists-action@v1.6.0
+        id: check-tag
+        with: 
+          tag: 'V${{ steps.get-version.outputs.version }}'
 
       - name: Create or update GitHub Release
         id: create_or_update_github_release
@@ -78,7 +69,7 @@ jobs:
           prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: env.RELEASE_EXISTS != 'true'
+        if: steps.check-tag.outputs.exists != 'true' 
 
         
       - name: Update nightly release
@@ -87,4 +78,4 @@ jobs:
             tag: ${{ steps.get-version.outputs.version }}
             token: ${{ secrets.GITHUB_TOKEN }}
             files: .dist/zipped/*.zip
-        if: env.RELEASE_EXISTS != 'true'
+        if: steps.check-tag.outputs.exists != 'true' 
