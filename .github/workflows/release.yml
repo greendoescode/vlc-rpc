@@ -58,6 +58,7 @@ jobs:
         id: check-tag
         with: 
           tag: 'V${{ steps.get-version.outputs.version }}'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create or update GitHub Release
         id: create_or_update_github_release
