@@ -1,6 +1,10 @@
 name: Release
 
-on: [workflow_dispatch]
+on: 
+  release:
+    types:
+      - released
+  workflow_dispatch:
 
 jobs:
   build_and_test:
@@ -47,30 +51,19 @@ jobs:
           path: |
             .dist/win-x64
 
-      - name: Check release exists
-        uses: mukunku/tag-exists-action@v1.6.0
-        id: check-tag
-        with: 
-          tag: 'V${{ steps.get-version.outputs.version }}'
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create or update GitHub Release
-        id: create_or_update_github_release
-        uses: actions/create-release@v1
+      - name: Upload Artifact
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
         with:
-          tag_name: "V${{ steps.get-version.outputs.version }}"
-          release_name: "Pre-release ${{ steps.get-version.outputs.version }}"
-          draft: false
-          prerelease: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: steps.check-tag.outputs.exists != 'true' 
+          name: build-artifact
+          retention-days: 30
+          if-no-files-found: error
+          path: .dist/zipped/*.zip
 
-        
-      - name: Update nightly release
-        uses: pyTooling/Actions/releaser@main
+      - name: Upload to Release
+        id: release
+        if: ${{ github.event_name == 'release' }}
+        uses: shogo82148/actions-upload-release-asset@dccd6d23e64fd6a746dce6814c0bde0a04886085 # v1.7.2
         with:
-            tag: ${{ steps.get-version.outputs.version }}
-            token: ${{ secrets.GITHUB_TOKEN }}
-            files: .dist/zipped/*.zip
-        if: steps.check-tag.outputs.exists != 'true' 
+          upload_url: ${{ github.event.release.upload_url }}
+          overwrite: true
+          asset_path: .dist/zipped/*.zip
