@@ -8,11 +8,12 @@ const log = require('../helpers/lager.js');
 const cl = require('../helpers/configLoader.js');
 const config = cl.getOrInit('config.js');
 const axios = require('axios');
-const path = require("path");
 const { debug } = require('console');
 
 let staticOverridesFetcher = new (require('./staticOverridesFetcher.js'))(cl.getOrInit('staticoverrides.js'));
-let musichoardersFetcher = new (require('./musichoardersFetcher.js'))(config.rpc.persistentMusicHoardersCache);
+let appleFetcher = new (require('./appleFetcher.js'))();
+let bandcampFetcher = new (require('./bandcampFetcher.js'))();
+let coverartarchiveFetcher = new (require('./coverartarchiveFetcher.js'))();
 
 // These functions, 'fetchers', provide uniform inteface for simple access to the APIs
 // They take VLC metadata as the argument and on success return object containing
@@ -20,111 +21,10 @@ let musichoardersFetcher = new (require('./musichoardersFetcher.js'))(config.rpc
 // In order to be as simple as possible, the functions may throw exceptions or not return anything.
 //   They are expected to be called through the `fetchSafely()` wrapper.
 const fetchers = {
-  "staticoverrides": async (metadata) => {
-    return staticOverridesFetcher.fetch(metadata);
-  },
-  "musichoarders": async (metadata) => {
-    //return musichoardersFetcher.fetch("musichoarders", metadata);
-  },
-  "apple": async (metadata) => { // Doesn't rely on MusicHoarders, keep it that way, just in case
-    if ((metadata.ALBUMARTIST || metadata.artist) && metadata.title)
-    {
-      const result = await axios.get("https://itunes.apple.com/search", {
-        params: {
-          media: "music",
-          term: `${metadata.ALBUMARTIST || metadata.artist} ${metadata.title}`,
-        },
-        headers: {"Accept-Encoding": "gzip,deflate,compress" }
-      });
-      if (result.data.resultCount > 0 && result.data.results[0] !== undefined)
-      {
-        return {
-          artworkFrom: "Apple Music",
-          artworkUrl: result.data.results[0].artworkUrl100,
-          joinFrom: "Apple Music",
-          joinUrl: result.data.results[0].trackViewUrl
-        };
-      }
-    }
-  },
-  "bandcamp": async (metadata) => {
-    if ((metadata.ALBUMARTIST || metadata.artist) && (metadata.album || metadata.title))
-    {
-      const result = await axios.post("https://bandcamp.com/api/bcsearch_public_api/1/autocomplete_elastic", {
-        fan_id: null,
-        full_page: false,
-        search_filter: "",
-        search_text: `${metadata.ALBUMARTIST || metadata.artist} ${metadata.album || metadata.title}`,
-      },{
-        headers: {"Accept-Encoding": "gzip,deflate,compress" }
-      });
-      if (result.data.auto.results.length > 0)
-      {
-        let resultItem = result.data.auto.results[0];
-        //console.log(resultTrack);
-        return {
-          artworkFrom: "Bandcamp",
-          artworkUrl: resultItem.img.replace("/img/", "/img/a"),
-          joinFrom: "Bandcamp",
-          joinUrl: resultItem.item_url_path
-        }
-      }
-    }
-  },
-  "coverartarchive": async (metadata) => {
-    if ((metadata.MUSICBRAINZ_ALBUMID) && metadata.title)
-    {
-      const result = await axios.get("https://coverartarchive.org/release/" + metadata.MUSICBRAINZ_ALBUMID, {
-        headers: {"Accept-Encoding": "gzip,deflate,compress" }})
-      if (result.data.images[0] !== undefined)
-      {
-        console.warn(result.data.images[0].thumbnails.small);
-        return {
-          artworkFrom: "Cover Art Archive",
-          artworkUrl: result.data.images[0].thumbnails.small,
-          joinFrom: "Cover Art Archive",
-          joinUrl: result.data.release
-        };
-      }
-    }
-  },
-  "deezer": async (metadata) => {
-    //return musichoardersFetcher.fetch("deezer", metadata);
-  },
-  "qobuz": async (metadata) => {
-    //return musichoardersFetcher.fetch("qobuz", metadata);
-    // Also seems to require access token
-  },
-  "spotify": async (metadata) => {
-    /* // Fails, no access token
-    console.log("Searching Spotify:");
-    const result = await axios.get("https://api-partner.spotify.com/pathfinder/v1/query", {
-      params: {
-        operationName: "searchDesktop",
-        variables: JSON.stringify({
-          "searchTerm": `${metadata.ALBUMARTIST || metadata.artist} ${metadata.title}`,
-          "offset":0,"limit":10,"numberOfTopResults":5,"includeAudiobooks":true
-        }),
-        extensions: JSON.stringify({
-          "persistedQuery": {
-            "version":1,
-            "sha256Hash":"130115162add6f3499d2f88ead8a37a7cad1d4d2314f3a206377035e7d26b74c"
-          }
-        })
-      },
-      headers: {"Accept-Encoding": "gzip,deflate,compress" }
-    });
-    console.log(result.data);
-    "extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%22130115162add6f3499d2f88ead8a37a7cad1d4d2314f3a206377035e7d26b74c%22%7D%7D"
-    */
-  },
-  "soundcloud": async (metadata) => {
-    //return musichoardersFetcher.fetch("soundcloud", metadata);
-    // Also seems to require access token
-  },
-  "tidal": async (metadata) => {
-    //return musichoardersFetcher.fetch("tidal", metadata);
-  }
+  "staticoverrides": (md) => staticOverridesFetcher.fetch(md),
+  "apple": (md) => appleFetcher.fetch(md),
+  "bandcamp": (md) => bandcampFetcher.fetch(md),
+  "coverartarchive": (md) => coverartarchiveFetcher.fetch(md)
 }
 
 /**
@@ -309,17 +209,13 @@ module.exports = async (status) => {
     smallImageKey: status.state,
     smallImageText: hoverTexts[1] || `Volume: ${Math.round(status.volume / 2.56)}%`,
     instance: true,
+    buttons: (joinUrl && joinLabel
+              ? [{
+                    label: joinLabel,
+                    url: joinUrl
+                }]
+              : undefined)
   };
-
-  if (joinUrl && joinLabel)
-  {
-    output.buttons = [
-      {
-        label: joinLabel,
-        url: joinUrl
-      }
-    ];
-  }
 
   if(status.stats.decodedvideo > 0) { // if video
     output.type = 3;

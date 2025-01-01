@@ -1,6 +1,10 @@
 name: Release
 
-on: [workflow_dispatch]
+on: 
+  release:
+    types:
+      - released
+  workflow_dispatch:
 
 jobs:
   build_and_test:
@@ -8,73 +12,58 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        
       - name: Get current date
         id: get-date
         run: |
           echo "NOW=$(date +'%Y%m%dT%H%M%S')" >> $GITHUB_ENV
+          
       - name: npm install, build, and test
         run: |
           npm install
           npm run build --if-present
           npm test
+          
       - name: Get Version From package.json
         id: get-version
         uses: beaconbrigade/package-json-version@v0.3
         with:
           path: .
-      - name: Package for Windows
-        run: |
-          wget -nv -P .dist/win-x64 https://nodejs.org/download/release/latest/win-x64/node.exe
-          cp -r * .dist/win-x64/
+          
+      - uses: ./.github/actions/nodeci-build-windows
+        with:
+          name: vlc-rpc-v${{steps.get-version.outputs.version}}-bundled-win-x64
+          
+      - uses: ./.github/actions/nodeci-build-linux
+        with:
+          name: vlc-rpc-v${{steps.get-version.outputs.version}}-bundled-linux-x64
+          
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage-report
+          path: output/test/code-coverage.html
+          
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
         with:
           name: vlc-rpc-v${{steps.get-version.outputs.version}}-bundled-win-x64
           path: |
             .dist/win-x64
-      - name: Archive code coverage results
-        uses: actions/upload-artifact@v3
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
         with:
-          name: code-coverage-report
-          path: output/test/code-coverage.html
+          name: build-artifact
+          retention-days: 30
+          if-no-files-found: error
+          path: .dist/zipped/*.zip
 
-      - name: Check if release exists
-        id: check_release
-        run: |
-          set -e
-          response=$(curl -s -o /dev/null -w "%{http_code}" -X GET -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/releases/tags/v${{ steps.get-version.outputs.version }}")
-          if [[ $response -eq 200 ]]; then
-            echo "Release v${{ steps.get-version.outputs.version }}" exists.
-            echo "RELEASE_EXISTS=true" >> $GITHUB_ENV
-          else
-            echo "Release v${{ steps.get-version.outputs.version }}" does not exist.
-            echo "RELEASE_EXISTS=false" >> $GITHUB_ENV
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create or update GitHub Release
-        id: create_or_update_github_release
-        uses: actions/create-release@v1
+      - name: Upload to Release
+        id: release
+        if: ${{ github.event_name == 'release' }}
+        uses: shogo82148/actions-upload-release-asset@dccd6d23e64fd6a746dce6814c0bde0a04886085 # v1.7.2
         with:
-          tag_name: "V${{ steps.get-version.outputs.version }}"
-          release_name: "Pre-release ${{ steps.get-version.outputs.version }}"
-          draft: false
-          prerelease: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: env.RELEASE_EXISTS != 'true'
-
-      - name: Get Release ID
-        if: env.RELEASE_EXISTS == 'true'
-        id: get_release_id
-        run: |
-          set -e
-          release_id=$(curl -s -X GET -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/releases/tags/v${{ steps.get-version.outputs.version }}" | jq -r '.id')
-          echo "RELEASE_ID=$release_id" >> $GITHUB_ENV
-
-      - name: Attach artifact to release
-        if: env.RELEASE_EXISTS == 'true'
-        run: |
-          set -e
-          curl -X POST -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/zip" --data-binary vlc-rpc-v${{steps.get-version.outputs.version}}-bundled-win-x64.zip "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }}/assets?name=vlc-rpc-v${{steps.get-version.outputs.version}}-bundled-win-x64.zip"
+          upload_url: ${{ github.event.release.upload_url }}
+          overwrite: true
+          asset_path: .dist/zipped/*.zip
