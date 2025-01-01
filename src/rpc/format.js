@@ -267,9 +267,10 @@ module.exports = async (status) => {
   output.largeImageText = (output.largeImageText + "  ").substring(0, 128);
   output.smallImageText = (output.smallImageText + "  ").substring(0, 128);
 
-  const end = Math.floor(Date.now() / 1000 + ((status.length - status.time) / status.rate));
   if (status.state === 'playing' && config.rpc.displayTimeRemaining && status.length != 0) {
-    output.endTimestamp = end;
+    const now = new Date().valueOf();
+    output.startTimestamp = Math.round(now - status.time * 1000);
+    output.endTimestamp = Math.round(now + (status.length - status.time) * 1000);
   }
   log('Format output', output);
   return output;
