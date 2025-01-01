@@ -300,6 +300,7 @@ module.exports = async (status) => {
   );
 
   let output = {
+    type: 0,
     // Shows file thats playing.. well most of the time
     details: meta.title || meta.filename || "Playing something..",
     // Sets album art depending on whats set in the file, or if album art cannot be found
@@ -320,10 +321,9 @@ module.exports = async (status) => {
     ];
   }
 
-  if(status.stats.decodedvideo > 0)
-  { // if video
-    if (meta['YouTube Start Time'] !== undefined)
-    { // if youtube video
+  if(status.stats.decodedvideo > 0) { // if video
+    output.type = 3;
+    if (meta['YouTube Start Time'] !== undefined) { // if youtube video
       output.largeImageKey = 'youtube';
       output.largeImageText = meta.url;
     }
@@ -341,14 +341,11 @@ module.exports = async (status) => {
     } else {
       output.state = `${(status.date || '')} Video`;
     }
-  }
-  else if (meta.now_playing)
-  { // if a stream
+  } else if (meta.now_playing) { // if a stream
+    output.type = 1;
     output.state = meta.now_playing || "Stream";
-  }
-  else if (display_artist)
-  { // if a song
-
+  } else if (display_artist) { // if a song
+    output.type = 2;
     // Add artist to the state
     output.state = display_artist;
 

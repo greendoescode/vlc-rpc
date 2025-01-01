@@ -45,12 +45,12 @@ function update() {
           awake = false;
           client.clearActivity();
         } else {
-	  if (config.console.presencestate == true){
-        console.log("Presence updated")
-      }
-	  client.setActivity(await format(status));
-	  awake = false;
-	}
+          if (config.console.presencestate == true){
+            console.log("Presence updated")
+          }
+          client.setActivity(await format(status));
+          awake = false;
+        }
       }
     }
   });
