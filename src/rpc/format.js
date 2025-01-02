@@ -238,7 +238,7 @@ module.exports = async (status) => {
       output.state = `${(status.date || '')} Video`;
     }
   } else if (meta.now_playing) { // if a stream
-    output.type = 1;
+    output.type = 2;
     output.state = meta.now_playing || "Stream";
   } else if (display_artist) { // if a song
     output.type = 2;
