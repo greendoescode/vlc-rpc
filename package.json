@@ -4,14 +4,15 @@
   "description": "Discord rich presence for VLC media player.",
   "main": "index.js",
   "dependencies": {
-    "axios": "^1.7.4",
-    "discord-rpc": "^4.0.0",
+    "axios": "^1.7.9",
+    "discord-rpc": "^4.0.1",
     "js-levenshtein": "^1.1.6",
+    "punycode": "^2.3.1",
     "register-scheme": "^0.0.2",
     "vlc.js": "^3.2.7"
   },
   "devDependencies": {
-    "@types/node": "^18.11.3"
+    "@types/node": "^22.12.0"
   },
   "scripts": {
     "start": "node --trace-deprecation ./src/app.js",
