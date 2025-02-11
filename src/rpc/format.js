@@ -14,6 +14,8 @@ let staticOverridesFetcher = new (require('./staticOverridesFetcher.js'))(cl.get
 let appleFetcher = new (require('./appleFetcher.js'))();
 let bandcampFetcher = new (require('./bandcampFetcher.js'))();
 let coverartarchiveFetcher = new (require('./coverartarchiveFetcher.js'))();
+let songTitle = null;
+let selectedStream = null;
 
 // These functions, 'fetchers', provide uniform inteface for simple access to the APIs
 // They take VLC metadata as the argument and on success return object containing
@@ -130,7 +132,14 @@ module.exports = async (status) => {
       instance: true,
     }; 
   } // else
+
   const { meta } = status.information.category;
+
+  if(status.information.category['Stream 0'].Frame_rate){
+    selectedStream = status.information.category['Stream 1']
+  } else {
+    selectedStream = status.information.category['Stream 0']
+  }
 
   // Fetch artwork and join URLs
   let artwork = config.rpc.largeIcon, fetched = "Nowhere", joinUrl, joinLabel;
@@ -163,6 +172,7 @@ module.exports = async (status) => {
     console.log(status.state);
     console.log(fetched);
     console.log(meta);
+    console.log(songTitle)
     console.log(status.stats.decodedvideo);
   }
 
@@ -199,10 +209,17 @@ module.exports = async (status) => {
     }
   );
 
+  if (config.rpc.enableSampleRate){
+    songTitle = `${meta.title || meta.filename || "Playing something.."} [${selectedStream['Bits_per_sample']} Bits, ${selectedStream['Sample_rate'].slice(0, 2)}kHz]`;
+  } else {
+    songtitle = meta.title || meta.filename || "Playing something.."
+  }
+
+
   let output = {
     type: 0,
     // Shows file thats playing.. well most of the time
-    details: meta.title || meta.filename || "Playing something..",
+    details: songTitle,
     // Sets album art depending on whats set in the file, or if album art cannot be found
     largeImageKey: artwork || "https://i.pinimg.com/originals/67/f6/cb/67f6cb14f862297e3c145014cdd6b635.jpg",
     largeImageText: hoverTexts[0] || config.rpc.largeImageText,

@@ -40,6 +40,10 @@ module.exports = {
     //   "apple", "bandcamp", "deezer", "qobuz", "spotify", "soundcloud", "tidal" and "coverartarchive"
     whereToFetchOnline: "staticoverrides",
 
+    // This feature enables showing the Samplerate and Bitdepth by the title of a song. 
+    // EG: Lorem [32bit/41kHz]
+    enableSampleRate: false,
+
     // Preferred provider of the rpc button (as above)
     changeButtonProvider: "staticoverrides",
 
