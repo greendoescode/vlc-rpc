@@ -32,7 +32,7 @@ jobs:
         with:
           name: vlc-rpc-v${{steps.get-version.outputs.version}}-nightly${{env.NOW}}-bundled-linux-x64
       - name: Archive code coverage results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: code-coverage-report
           path: output/test/code-coverage.html
