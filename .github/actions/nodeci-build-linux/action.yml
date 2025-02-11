@@ -20,7 +20,7 @@ runs:
         cd ../..
       shell: bash
     - name: Archive Linux artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{inputs.name}}
         path: .dist/linux-x64/
