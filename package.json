@@ -11,6 +11,11 @@
     "register-scheme": "^0.0.2",
     "vlc.js": "^3.2.7"
   },
+  "overrides": {
+    "node-fetch@2.x": {
+      "whatwg-url": "14.x"
+    }
+  },
   "devDependencies": {
     "@types/node": "^22.12.0"
   },
