@@ -135,17 +135,12 @@ module.exports = async (status) => {
 
   const { meta } = status.information.category;
 
-  console.log(meta)
-
   let season = meta.seasonNumber;
   let episode = meta.episodeNumber;
   let showname = meta.showName || ""; // fallback to VLC title if available
 
   if (season === undefined && episode === undefined) {
     const filename = meta.filename || "";
-
-    console.log("im here")
-
     // Try matching SxxEyy or Exx
     const match =
       filename.match(/S(\d{1,2})E(\d{1,2})/i) || filename.match(/E(\d{1,2})/i);
