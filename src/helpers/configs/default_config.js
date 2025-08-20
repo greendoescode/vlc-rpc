@@ -60,6 +60,9 @@ module.exports = {
     // Show the remaining playback time
     displayTimeRemaining: true,
 
+    // Choose to show the season number when watching a show
+    seasonnumber: true,
+
     // Keep rich presence when playback is stopped 
     showStopped: true,
 

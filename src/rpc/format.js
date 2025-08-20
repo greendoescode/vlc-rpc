@@ -138,13 +138,10 @@ module.exports = async (status) => {
 
   // Select VLC stream to fetch track information (wip for attatched mode)
   if (config.rpc.detached) {
-    selectedStream =
-      status.information.category["Stream 'audio/0'"] ??
-      status.information.category["Stream 'video/1'"] ??
-      (status.information.category["Stream 0"]?.Frame_rate
-        ? status.information.category["Stream 1"]
-        : status.information.category["Stream 0"]) ??
-      null;
+    const streams = Object.values(status.information.category);
+
+    // Find the first audio stream
+    selectedStream = streams.find((stream) => stream.Type === "Audio") ?? null;
   }
 
   // Fetch artwork and join URLs
@@ -207,7 +204,6 @@ module.exports = async (status) => {
       }
     }
   );
-  
 
   // Format songTitle for Bit rate and Sample Rate
   if (config.rpc.enableSampleRate && selectedStream) {
@@ -255,7 +251,7 @@ module.exports = async (status) => {
     }
     if (meta.episodeNumber) {
       output.state = `Episode ${meta.episodeNumber}`;
-      if (meta.seasonNumber) {
+      if (meta.seasonNumber && config.rpc.seasonnumber) {
         output.state += ` - Season ${meta.seasonNumber}`;
       }
     } else if (display_artist) {
