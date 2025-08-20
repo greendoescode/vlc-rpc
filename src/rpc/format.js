@@ -17,6 +17,7 @@ let bandcampFetcher = new (require("./bandcampFetcher.js"))();
 let coverartarchiveFetcher = new (require("./coverartarchiveFetcher.js"))();
 let songTitle = null;
 let selectedStream = null;
+let bitsPerSample = null;
 
 // These functions, 'fetchers', provide uniform inteface for simple access to the APIs
 // They take VLC metadata as the argument and on success return object containing
@@ -142,6 +143,7 @@ module.exports = async (status) => {
 
     // Find the first audio stream
     selectedStream = streams.find((stream) => stream.Type === "Audio") ?? null;
+    bitsPerSample = selectedStream.Bits_per_sample ?? selectedStream.Decoded_bits_per_sample ?? null;
   }
 
   // Fetch artwork and join URLs
@@ -208,7 +210,7 @@ module.exports = async (status) => {
   // Format songTitle for Bit rate and Sample Rate
   if (config.rpc.enableSampleRate && selectedStream) {
     songTitle = `${meta.title || meta.filename || "Playing something.."} [${
-      selectedStream["Bits_per_sample"]
+      bitsPerSample
     } Bits, ${selectedStream["Sample_rate"].slice(0, 2)}kHz]`;
   } else {
     songTitle = meta.title || meta.filename || "Playing something..";
