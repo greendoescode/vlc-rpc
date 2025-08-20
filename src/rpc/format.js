@@ -2,11 +2,9 @@
  * Description: Decides what information to display based on the nature of the media (video, music, etc)
  */
 
-const fs = require("fs");
 const log = require("../helpers/lager.js");
 const cl = require("../helpers/configLoader.js");
 const config = cl.getOrInit("config.js");
-const axios = require("axios");
 const { debug } = require("console");
 
 let staticOverridesFetcher = new (require("./staticOverridesFetcher.js"))(
@@ -137,13 +135,48 @@ module.exports = async (status) => {
 
   const { meta } = status.information.category;
 
+  console.log(meta)
+
+  let season = meta.seasonNumber;
+  let episode = meta.episodeNumber;
+  let showname = meta.showName || ""; // fallback to VLC title if available
+
+  if (season === undefined && episode === undefined) {
+    const filename = meta.filename || "";
+
+    console.log("im here")
+
+    // Try matching SxxEyy or Exx
+    const match =
+      filename.match(/S(\d{1,2})E(\d{1,2})/i) || filename.match(/E(\d{1,2})/i);
+
+    if (match) {
+      if (match.length === 3) {
+        season = parseInt(match[1], 10);
+        episode = parseInt(match[2], 10);
+      } else if (match.length === 2) {
+        episode = parseInt(match[1], 10);
+      }
+
+      // Extract showname as everything before the match
+      showname = filename
+        .slice(0, match.index)
+        .replace(/[\._-]+$/, "") // remove trailing dots, underscores, or dashes
+        .replace(/[\._]/g, " ") // replace remaining dots/underscores with space
+        .trim();
+    }
+  }
+
   // Select VLC stream to fetch track information (wip for attatched mode)
   if (config.rpc.detached) {
     const streams = Object.values(status.information.category);
 
     // Find the first audio stream
     selectedStream = streams.find((stream) => stream.Type === "Audio") ?? null;
-    bitsPerSample = selectedStream?.Bits_per_sample ?? selectedStream?.Decoded_bits_per_sample ?? null;
+    bitsPerSample =
+      selectedStream?.Bits_per_sample ??
+      selectedStream?.Decoded_bits_per_sample ??
+      null;
   }
 
   // Fetch artwork and join URLs
@@ -209,9 +242,9 @@ module.exports = async (status) => {
 
   // Format songTitle for Bit rate and Sample Rate
   if (config.rpc.enableSampleRate && selectedStream) {
-    songTitle = `${meta.title || meta.filename || "Playing something.."} [${
-      bitsPerSample
-    } Bits, ${selectedStream["Sample_rate"].slice(0, 2)}kHz]`;
+    songTitle = `${
+      meta.title || meta.filename || "Playing something.."
+    } [${bitsPerSample} Bits, ${selectedStream["Sample_rate"].slice(0, 2)}kHz]`;
   } else {
     songTitle = meta.title || meta.filename || "Playing something..";
   }
@@ -247,14 +280,14 @@ module.exports = async (status) => {
       output.largeImageKey = "youtube";
       output.largeImageText = meta.url;
     }
-    if (meta.showName) {
+    if (showname) {
       // if a tv show
-      output.details = meta.showName;
+      output.details = showname;
     }
-    if (meta.episodeNumber) {
-      output.state = `Episode ${meta.episodeNumber}`;
-      if (meta.seasonNumber && config.rpc.seasonnumber) {
-        output.state += ` - Season ${meta.seasonNumber}`;
+    if (episode) {
+      output.state = `Episode ${episode}`;
+      if (season && season !== 1) {
+        output.state += ` - Season ${season}`;
       }
     } else if (display_artist) {
       output.state = display_artist;
