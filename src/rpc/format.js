@@ -143,7 +143,7 @@ module.exports = async (status) => {
 
     // Find the first audio stream
     selectedStream = streams.find((stream) => stream.Type === "Audio") ?? null;
-    bitsPerSample = selectedStream.Bits_per_sample ?? selectedStream.Decoded_bits_per_sample ?? null;
+    bitsPerSample = selectedStream?.Bits_per_sample ?? selectedStream?.Decoded_bits_per_sample ?? null;
   }
 
   // Fetch artwork and join URLs
