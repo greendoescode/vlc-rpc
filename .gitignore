@@ -105,3 +105,4 @@ dist
 
 config/*
 cache/*
+package-lock.json
