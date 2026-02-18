@@ -7,6 +7,7 @@ const fs = require('fs');
 const os = require('os')
 const config = require('./helpers/configLoader.js').getOrInit('config.js');
 const log = require('./helpers/lager.js');
+const crypto = require('crypto');
 require('./rpc/client.js');
 
 const platformDefaults = {
@@ -23,9 +24,7 @@ const platformDefaults = {
 
 // Generates a random password
 function randomPass() {
-	return Math.random()
-		.toString(36)
-		.slice(-8);
+	return crypto.randomBytes(32);
 }
 
 // Use a random password if none is supplied
