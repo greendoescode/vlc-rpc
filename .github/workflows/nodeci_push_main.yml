@@ -38,9 +38,13 @@ jobs:
           name: code-coverage-report
           path: output/test/code-coverage.html
       - name: Update nightly release
-        uses: pyTooling/Actions/releaser@main
+        uses: softprops/action-gh-release@v2
         with:
-            tag: nightly
-            rm: true
-            token: ${{ secrets.GITHUB_TOKEN }}
-            files: .dist/zipped/*.zip
+          tag_name: nightly
+          name: Nightly Build
+          prerelease: true
+          make_latest: false
+          files: .dist/zipped/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
