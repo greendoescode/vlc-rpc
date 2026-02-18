@@ -37,6 +37,14 @@ jobs:
         with:
           name: code-coverage-report
           path: output/test/code-coverage.html
+      - name: Delete existing nightly assets
+        run: |
+          assets=$(gh release view nightly --json assets --jq '.assets[].name' 2>/dev/null || echo "")
+          for asset in $assets; do
+            gh release delete-asset nightly "$asset" -y
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   
       - name: Update nightly release
         uses: softprops/action-gh-release@v2
         with:
